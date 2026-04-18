@@ -1,0 +1,151 @@
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { signOut } from "next-auth/react";
+import {
+  LayoutDashboard, Video, Users2, Settings, LogOut,
+  ChevronLeft, ChevronRight, Shield, Menu,
+} from "lucide-react";
+import { Loader2 } from "lucide-react";
+
+const NAV = [
+  { href: "/admin",              icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/videos",       icon: Video,           label: "Videos" },
+  { href: "/admin/clientes",     icon: Users2,          label: "Clientes" },
+  { href: "/admin/configuracion", icon: Settings,       label: "Configuración" },
+];
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated" && (session?.user as any)?.role !== "admin") {
+      router.push("/portal/capacitaciones");
+    }
+  }, [status, session, router]);
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--color-bg)" }}>
+        <Loader2 size={40} className="animate-spin" style={{ color: "var(--color-primary)" }} />
+      </div>
+    );
+  }
+
+  if ((session?.user as any)?.role !== "admin") return null;
+
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
+      {/* Logo area */}
+      <div className="p-4 border-b flex items-center gap-3" style={{ borderColor: "var(--color-border)" }}>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--color-primary)" }}>
+          <Shield size={18} color="#fff" />
+        </div>
+        {!collapsed && (
+          <div>
+            <p className="font-bold text-sm" style={{ color: "var(--color-text)" }}>Panel Admin</p>
+            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>SYB Solutions</p>
+          </div>
+        )}
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 p-3 space-y-1">
+        {NAV.map(({ href, icon: Icon, label }) => (
+          <Link
+            key={href}
+            href={href}
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80"
+            style={{ color: "var(--color-text-muted)" }}
+          >
+            <Icon size={18} style={{ color: "var(--color-primary)", flexShrink: 0 }} />
+            {!collapsed && label}
+          </Link>
+        ))}
+      </nav>
+
+      {/* Footer */}
+      <div className="p-3 border-t space-y-2" style={{ borderColor: "var(--color-border)" }}>
+        {!collapsed && (
+          <div className="px-3 py-2">
+            <p className="text-xs font-semibold truncate" style={{ color: "var(--color-text)" }}>{session?.user?.name}</p>
+            <p className="text-xs truncate" style={{ color: "var(--color-text-muted)" }}>{session?.user?.email}</p>
+          </div>
+        )}
+        <button
+          onClick={() => signOut({ callbackUrl: "/" })}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full hover:opacity-80 transition-opacity"
+          style={{ color: "#ef4444" }}
+        >
+          <LogOut size={18} style={{ flexShrink: 0 }} />
+          {!collapsed && "Cerrar sesión"}
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex min-h-screen" style={{ background: "var(--color-bg)" }}>
+      {/* Desktop sidebar */}
+      <aside
+        className={`hidden md:flex flex-col border-r transition-all duration-300 ${collapsed ? "w-16" : "w-60"}`}
+        style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+      >
+        <SidebarContent />
+        {/* Collapse toggle */}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="absolute top-20 -right-3 w-6 h-6 rounded-full border shadow-sm flex items-center justify-center z-10 hidden md:flex"
+          style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+        >
+          {collapsed ? <ChevronRight size={12} style={{ color: "var(--color-primary)" }} /> : <ChevronLeft size={12} style={{ color: "var(--color-primary)" }} />}
+        </button>
+      </aside>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setMobileOpen(false)} />
+          <aside
+            className="fixed inset-y-0 left-0 z-50 w-60 md:hidden flex flex-col"
+            style={{ background: "var(--color-surface)", borderRight: `1px solid var(--color-border)` }}
+          >
+            <SidebarContent />
+          </aside>
+        </>
+      )}
+
+      {/* Main content */}
+      <main className="flex-1 flex flex-col min-w-0">
+        {/* Top bar */}
+        <div
+          className="sticky top-0 z-20 flex items-center gap-3 px-4 py-3 border-b"
+          style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+        >
+          <button className="md:hidden p-1.5 rounded-lg" onClick={() => setMobileOpen(true)} style={{ color: "var(--color-text)" }}>
+            <Menu size={20} />
+          </button>
+          <Image src="/images/LogoLargo.PNG" alt="SYB" width={120} height={36} className="h-8 w-auto object-contain" />
+          <div className="ml-auto flex items-center gap-2">
+            <Link href="/" className="text-xs hover:opacity-70" style={{ color: "var(--color-text-muted)" }}>
+              Ver sitio →
+            </Link>
+          </div>
+        </div>
+
+        <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+}

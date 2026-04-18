@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.90.0",
     "@headlessui/react": "^2.1.2",
     "bcryptjs": "^2.4.3",
     "date-fns": "^4.1.0",

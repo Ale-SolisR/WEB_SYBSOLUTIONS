@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getPool, sql } from "@/lib/db";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
 export async function PUT(req: NextRequest, { params }: Params) {
   const session = await getServerSession(authOptions);
@@ -11,10 +11,11 @@ export async function PUT(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
+    const { id } = await params;
     const { Nombre, LogoUrl, Activo, Orden } = await req.json();
     const pool = await getPool();
     await pool.request()
-      .input("Id", sql.Int, Number(params.id))
+      .input("Id", sql.Int, Number(id))
       .input("Nombre", sql.NVarChar, Nombre)
       .input("LogoUrl", sql.NVarChar, LogoUrl || "")
       .input("Activo", sql.Bit, Activo ? 1 : 0)
@@ -32,9 +33,10 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
+    const { id } = await params;
     const pool = await getPool();
     await pool.request()
-      .input("Id", sql.Int, Number(params.id))
+      .input("Id", sql.Int, Number(id))
       .query("DELETE FROM web.CLIENTES WHERE Id=@Id");
     return NextResponse.json({ success: true });
   } catch {

@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { getPool, sql } from "@/lib/db";
 import { extractYoutubeId } from "@/lib/youtube";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
 /** PUT /api/videos/[id] – Updates a video (admin only) */
 export async function PUT(req: NextRequest, { params }: Params) {
@@ -14,13 +14,14 @@ export async function PUT(req: NextRequest, { params }: Params) {
   }
 
   try {
+    const { id } = await params;
     const body = await req.json();
     const { Titulo, Descripcion, YoutubeUrl, Categoria, Activo, Orden } = body;
     const YoutubeId = extractYoutubeId(YoutubeUrl);
     const pool = await getPool();
 
     await pool.request()
-      .input("Id", sql.Int, Number(params.id))
+      .input("Id", sql.Int, Number(id))
       .input("Titulo", sql.NVarChar, Titulo)
       .input("Descripcion", sql.NVarChar, Descripcion || "")
       .input("YoutubeUrl", sql.NVarChar, YoutubeUrl)
@@ -49,9 +50,10 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   }
 
   try {
+    const { id } = await params;
     const pool = await getPool();
     await pool.request()
-      .input("Id", sql.Int, Number(params.id))
+      .input("Id", sql.Int, Number(id))
       .query("DELETE FROM web.VIDEOS WHERE Id=@Id");
     return NextResponse.json({ success: true });
   } catch (err) {

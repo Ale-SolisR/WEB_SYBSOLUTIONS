@@ -60,8 +60,12 @@ export default function ThemeSelector() {
                   }}
                 >
                   <span
-                    className="w-5 h-5 rounded-full flex-shrink-0 ring-2"
-                    style={{ background: t.color, ringColor: theme === t.id ? t.color : "transparent" }}
+                    className="w-5 h-5 rounded-full flex-shrink-0"
+                    style={{
+                      background: t.color,
+                      outline: theme === t.id ? `2px solid ${t.color}` : "2px solid transparent",
+                      outlineOffset: "2px",
+                    }}
                   />
                   <span>{t.emoji} {t.label}</span>
                   {theme === t.id && <span className="ml-auto text-xs" style={{ color: t.color }}>✓</span>}

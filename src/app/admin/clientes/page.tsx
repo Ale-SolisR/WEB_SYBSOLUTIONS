@@ -2,13 +2,55 @@
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Plus, Edit2, Trash2, X, Save, Loader2, Building2 } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Save, Loader2, Building2, ImageOff } from "lucide-react";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import type { Cliente } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface ClienteForm { Nombre: string; LogoUrl: string; Orden: number; Activo: boolean; }
+interface ClienteForm {
+  Nombre: string;
+  LogoUrl: string;
+  Orden: number;
+  Activo: boolean;
+}
+
+function ImagePreview({ url }: { url: string }) {
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { setError(false); setLoading(true); }, [url]);
+
+  if (!url.trim()) return (
+    <div className="flex items-center justify-center h-20 rounded-xl"
+      style={{ background: "var(--color-surface-2)", border: "1px dashed var(--color-border)" }}>
+      <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>Vista previa del logo</p>
+    </div>
+  );
+
+  return (
+    <div className="relative flex items-center justify-center h-20 rounded-xl overflow-hidden"
+      style={{ background: "var(--color-surface-2)", border: "1px solid var(--color-border)" }}>
+      {loading && <Loader2 size={18} className="animate-spin absolute" style={{ color: "var(--color-primary)" }} />}
+      {error ? (
+        <div className="flex flex-col items-center gap-1">
+          <ImageOff size={20} style={{ color: "var(--color-text-muted)" }} />
+          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>URL inválida</p>
+        </div>
+      ) : (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
+          src={url}
+          alt="Preview"
+          className="max-h-16 max-w-full object-contain"
+          style={{ display: loading ? "none" : "block" }}
+          onLoad={() => setLoading(false)}
+          onError={() => { setError(true); setLoading(false); }}
+        />
+      )}
+    </div>
+  );
+}
 
 export default function AdminClientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -16,8 +58,18 @@ export default function AdminClientes() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
 
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<ClienteForm>({ defaultValues: { Activo: true, Orden: 0 } });
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<ClienteForm>({
+    defaultValues: { Activo: true, Orden: 0 },
+  });
+
+  const logoUrlValue = watch("LogoUrl");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setPreviewUrl(logoUrlValue || ""), 600);
+    return () => clearTimeout(timer);
+  }, [logoUrlValue]);
 
   const fetchClientes = () =>
     fetch("/api/clientes").then((r) => r.json()).then(setClientes).catch(() => {}).finally(() => setLoading(false));
@@ -25,7 +77,8 @@ export default function AdminClientes() {
   useEffect(() => { fetchClientes(); }, []);
 
   const openNew = () => {
-    reset({ Nombre: "", LogoUrl: "", Orden: clientes.length + 1, Activo: true });
+    reset({ Nombre: "", LogoUrl: "", Orden: Math.max(0, clientes.length), Activo: true });
+    setPreviewUrl("");
     setEditingId(null);
     setShowForm(true);
   };
@@ -35,6 +88,7 @@ export default function AdminClientes() {
     setValue("LogoUrl", c.LogoUrl);
     setValue("Orden", c.Orden);
     setValue("Activo", c.Activo);
+    setPreviewUrl(c.LogoUrl);
     setEditingId(c.Id);
     setShowForm(true);
   };
@@ -65,42 +119,97 @@ export default function AdminClientes() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-black" style={{ color: "var(--color-text)" }}>Clientes</h1>
-          <p className="mt-1" style={{ color: "var(--color-text-muted)" }}>Logos y nombres visibles en la página principal</p>
+          <p className="mt-1" style={{ color: "var(--color-text-muted)" }}>
+            Logos y nombres visibles en la página principal
+          </p>
         </div>
         <button onClick={openNew} className="btn-primary"><Plus size={18} /> Agregar cliente</button>
       </div>
 
       <AnimatePresence>
         {showForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}>
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="card p-6 w-full max-w-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="card p-6 w-full max-w-md"
+            >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>{editingId ? "Editar cliente" : "Agregar cliente"}</h2>
-                <button onClick={() => setShowForm(false)} style={{ color: "var(--color-text-muted)" }}><X size={20} /></button>
+                <h2 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>
+                  {editingId ? "Editar cliente" : "Agregar cliente"}
+                </h2>
+                <button onClick={() => setShowForm(false)} style={{ color: "var(--color-text-muted)" }}>
+                  <X size={20} />
+                </button>
               </div>
+
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>Nombre *</label>
-                  <input {...register("Nombre", { required: "Requerido" })} className="input-field" placeholder="Nombre de la empresa" />
+                  <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>
+                    Nombre *
+                  </label>
+                  <input
+                    {...register("Nombre", {
+                      required: "El nombre es requerido",
+                      minLength: { value: 2, message: "Mínimo 2 caracteres" },
+                    })}
+                    className="input-field"
+                    placeholder="Nombre de la empresa"
+                  />
                   {errors.Nombre && <p className="text-xs text-red-500 mt-1">{errors.Nombre.message}</p>}
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>URL del logo</label>
-                  <input {...register("LogoUrl")} className="input-field" placeholder="https://..." />
-                  <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>URL de la imagen del logo (opcional)</p>
+                  <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>
+                    URL del logo
+                  </label>
+                  <input
+                    {...register("LogoUrl", {
+                      validate: (v) => {
+                        if (!v) return true;
+                        try { new URL(v); return true; }
+                        catch { return "Debe ser una URL válida (https://...)"; }
+                      },
+                    })}
+                    className="input-field"
+                    placeholder="https://ejemplo.com/logo.png"
+                  />
+                  {errors.LogoUrl && <p className="text-xs text-red-500 mt-1">{errors.LogoUrl.message}</p>}
                 </div>
+
+                {/* Live image preview */}
+                <ImagePreview url={previewUrl} />
+
                 <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>Orden</label>
-                  <input {...register("Orden", { valueAsNumber: true })} type="number" className="input-field" />
+                  <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>
+                    Orden de visualización
+                  </label>
+                  <input
+                    {...register("Orden", {
+                      valueAsNumber: true,
+                      min: { value: 0, message: "El orden no puede ser negativo" },
+                      validate: (v) => Number.isInteger(v) || "Debe ser un número entero",
+                    })}
+                    type="number"
+                    min={0}
+                    className="input-field"
+                  />
+                  {errors.Orden && <p className="text-xs text-red-500 mt-1">{errors.Orden.message}</p>}
                 </div>
+
                 {editingId && (
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" {...register("Activo")} className="w-4 h-4" />
                     <span className="text-sm" style={{ color: "var(--color-text)" }}>Visible en la página</span>
                   </label>
                 )}
+
                 <div className="flex gap-3 justify-end pt-2">
-                  <button type="button" onClick={() => setShowForm(false)} className="btn-outline py-2 px-4 text-sm">Cancelar</button>
+                  <button type="button" onClick={() => setShowForm(false)} className="btn-outline py-2 px-4 text-sm">
+                    Cancelar
+                  </button>
                   <button type="submit" disabled={saving} className="btn-primary py-2 px-4 text-sm">
                     {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                     {saving ? "Guardando..." : "Guardar"}
@@ -113,27 +222,39 @@ export default function AdminClientes() {
       </AnimatePresence>
 
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 size={36} className="animate-spin" style={{ color: "var(--color-primary)" }} /></div>
+        <div className="flex justify-center py-20">
+          <Loader2 size={36} className="animate-spin" style={{ color: "var(--color-primary)" }} />
+        </div>
       ) : (
         <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {clientes.map((c) => (
-            <motion.div key={c.Id} layout className="card p-5 flex flex-col items-center gap-3 text-center" style={{ opacity: c.Activo ? 1 : 0.5 }}>
+            <motion.div key={c.Id} layout
+              className="card p-5 flex flex-col items-center gap-3 text-center"
+              style={{ opacity: c.Activo ? 1 : 0.5 }}>
               {c.LogoUrl ? (
-                <Image src={c.LogoUrl} alt={c.Nombre} width={80} height={40} className="object-contain h-10 w-auto" />
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={c.LogoUrl} alt={c.Nombre} className="object-contain h-12 w-auto max-w-full" />
               ) : (
-                <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-black" style={{ background: "var(--color-primary)", color: "#fff" }}>
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-black"
+                  style={{ background: "var(--color-primary)", color: "#fff" }}>
                   {c.Nombre.charAt(0)}
                 </div>
               )}
               <div>
                 <p className="font-semibold text-sm" style={{ color: "var(--color-text)" }}>{c.Nombre}</p>
-                {!c.Activo && <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>Oculto</span>}
+                <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                  Orden #{c.Orden} {!c.Activo && "· Oculto"}
+                </p>
               </div>
               <div className="flex gap-2 w-full">
-                <button onClick={() => openEdit(c)} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs border" style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}>
+                <button onClick={() => openEdit(c)}
+                  className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs border"
+                  style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}>
                   <Edit2 size={13} /> Editar
                 </button>
-                <button onClick={() => deleteCliente(c.Id)} className="p-1.5 rounded-lg border" style={{ borderColor: "#fee2e2", color: "#ef4444" }}>
+                <button onClick={() => deleteCliente(c.Id)}
+                  className="p-1.5 rounded-lg border"
+                  style={{ borderColor: "#fee2e2", color: "#ef4444" }}>
                   <Trash2 size={13} />
                 </button>
               </div>

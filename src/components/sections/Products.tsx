@@ -49,7 +49,7 @@ export default function Products() {
                   📊
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black" style={{ color: "var(--color-text)" }}>SYB ERP</h3>
+                  <h3 className="text-2xl font-black" style={{ color: "var(--color-text)" }}>S&B ERP</h3>
                   <span className="badge text-xs">Disponible</span>
                 </div>
               </div>
@@ -88,7 +88,7 @@ export default function Products() {
                   🤝
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black" style={{ color: "var(--color-text)" }}>SYB CRM</h3>
+                  <h3 className="text-2xl font-black" style={{ color: "var(--color-text)" }}>S&B CRM</h3>
                   <div className="flex items-center gap-1.5 badge text-xs" style={{ background: "#8b5cf618", color: "#8b5cf6" }}>
                     <Clock size={11} /> En desarrollo
                   </div>

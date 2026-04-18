@@ -112,7 +112,15 @@ export default function Contact() {
                 </div>
                 <div>
                   <p className="font-semibold text-sm" style={{ color: "var(--color-text)" }}>Ubicación</p>
-                  <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>{config.direccion}</p>
+                  <a
+                    href="https://maps.app.goo.gl/yHKwWn2ctdU1m1GCA"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm hover:underline"
+                    style={{ color: "var(--color-text-muted)" }}
+                  >
+                    {config.direccion || "San José, Costa Rica"}
+                  </a>
                 </div>
               </div>
             </div>

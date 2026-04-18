@@ -6,6 +6,8 @@ import Products from "@/components/sections/Products";
 import Team from "@/components/sections/Team";
 import Clients from "@/components/sections/Clients";
 import Contact from "@/components/sections/Contact";
+import Citas from "@/components/sections/Citas";
+import Chatbot from "@/components/Chatbot";
 
 export default function HomePage() {
   return (
@@ -17,9 +19,11 @@ export default function HomePage() {
         <Products />
         <Team />
         <Clients />
+        <Citas />
         <Contact />
       </main>
       <Footer />
+      <Chatbot />
     </>
   );
 }

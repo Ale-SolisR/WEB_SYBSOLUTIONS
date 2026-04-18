@@ -67,10 +67,10 @@ function LoginForm() {
           <div className="text-center mb-8">
             <Image
               src="/images/LogoLargo.PNG"
-              alt="SYB Solutions"
-              width={160}
-              height={48}
-              className="h-12 w-auto object-contain mx-auto mb-4"
+              alt="S&B Solutions"
+              width={260}
+              height={80}
+              className="h-20 w-auto object-contain mx-auto mb-4"
             />
             <h1 className="text-2xl font-black" style={{ color: "var(--color-text)" }}>
               Iniciar sesión

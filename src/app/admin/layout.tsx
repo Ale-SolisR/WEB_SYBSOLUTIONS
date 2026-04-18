@@ -9,14 +9,19 @@ import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, Video, Users2, Settings, LogOut,
   ChevronLeft, ChevronRight, Shield, Menu,
+  Palette, Layers, Calendar, Bot,
 } from "lucide-react";
 import { Loader2 } from "lucide-react";
 
 const NAV = [
-  { href: "/admin",              icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/admin/videos",       icon: Video,           label: "Videos" },
-  { href: "/admin/clientes",     icon: Users2,          label: "Clientes" },
-  { href: "/admin/configuracion", icon: Settings,       label: "Configuración" },
+  { href: "/admin",               icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/secciones",     icon: Layers,          label: "Secciones" },
+  { href: "/admin/videos",        icon: Video,           label: "Videos" },
+  { href: "/admin/clientes",      icon: Users2,          label: "Clientes" },
+  { href: "/admin/temas",         icon: Palette,         label: "Temas" },
+  { href: "/admin/citas",         icon: Calendar,        label: "Citas" },
+  { href: "/admin/chatbot",       icon: Bot,             label: "Chatbot" },
+  { href: "/admin/configuracion", icon: Settings,        label: "Configuración" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -52,7 +57,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {!collapsed && (
           <div>
             <p className="font-bold text-sm" style={{ color: "var(--color-text)" }}>Panel Admin</p>
-            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>SYB Solutions</p>
+            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>S&amp;B Solutions</p>
           </div>
         )}
       </div>

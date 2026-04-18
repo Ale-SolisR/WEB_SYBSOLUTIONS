@@ -5,15 +5,15 @@ import SessionProvider from "@/components/SessionProvider";
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
-  title: "SYB Solutions – Software Empresarial & TI",
+  title: "S&B Solutions – Software Empresarial & TI",
   description:
-    "SYB Solutions ofrece ERP empresarial, desarrollo web, infraestructura de servidores, redes y servicios de TI para impulsar tu negocio.",
+    "S&B Solutions ofrece ERP empresarial, desarrollo web, infraestructura de servidores, redes y servicios de TI para impulsar tu negocio en Costa Rica.",
   icons: {
     icon: "/images/LOGO.png",
     apple: "/images/LOGO.png",
   },
   openGraph: {
-    title: "SYB Solutions",
+    title: "S&B Solutions",
     description: "Software Empresarial & Servicios TI",
     type: "website",
   },

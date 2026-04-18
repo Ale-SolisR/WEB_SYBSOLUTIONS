@@ -92,7 +92,7 @@ export default function Hero() {
                     📊
                   </div>
                   <div>
-                    <p className="text-white font-bold">SYB ERP</p>
+                    <p className="text-white font-bold">S&B ERP</p>
                     <p className="text-blue-200 text-sm">Sistema Empresarial</p>
                   </div>
                 </div>

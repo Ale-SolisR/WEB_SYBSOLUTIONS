@@ -23,14 +23,14 @@ function buildReply(userMsg: string, faqText: string): string {
     return "¡Hola! 👋 Soy el asistente virtual de S&B Solutions. Estoy aquí para ayudarte con información sobre nuestro **S&B ERP** y nuestros servicios TI. ¿En qué puedo ayudarte?";
   }
 
-  // ERP / product
-  if (/erp|sistema|software|gestion|inventario|factura|nomina|contab/.test(msg)) {
-    return "El **S&B ERP** es nuestro sistema de gestión empresarial diseñado para Costa Rica. Incluye módulos de:\n\n• 📦 Inventarios y bodega\n• 🧾 Facturación electrónica\n• 👥 Nómina y RRHH\n• 📊 Reportes en tiempo real\n• 🔗 Integración con Hacienda\n\n¿Te gustaría agendar una demo gratuita para verlo en acción?";
+  // Price / cost — check BEFORE generic ERP to avoid wrong match
+  if (/precio|costo|cuanto|cuánto|tarifa|plan|pago|cobran|valor/.test(msg)) {
+    return "Los precios del S&B ERP varían según el tamaño de tu empresa y los módulos que necesites. 💡\n\nLo mejor es que agendemos una **demo gratuita** donde analizamos tus necesidades y te presentamos la propuesta más conveniente.\n\n¿Te interesa agendar?";
   }
 
-  // Price / cost
-  if (/precio|costo|cuanto|tarifa|plan|pago/.test(msg)) {
-    return "Los precios del S&B ERP varían según el tamaño de tu empresa y los módulos que necesites. 💡\n\nLo mejor es que agendemos una **demo gratuita** donde analizamos tus necesidades y te presentamos la propuesta más conveniente.\n\n¿Te interesa agendar?";
+  // ERP / product info
+  if (/erp|sistema|software|gestion|inventario|factura|nomina|contab|modulo/.test(msg)) {
+    return "El **S&B ERP** es nuestro sistema de gestión empresarial diseñado para Costa Rica. Incluye módulos de:\n\n• 📦 Inventarios y bodega\n• 🧾 Facturación electrónica\n• 👥 Nómina y RRHH\n• 📊 Reportes en tiempo real\n• 🔗 Integración con Hacienda\n\n¿Te gustaría agendar una demo gratuita para verlo en acción?";
   }
 
   // Demo / appointment

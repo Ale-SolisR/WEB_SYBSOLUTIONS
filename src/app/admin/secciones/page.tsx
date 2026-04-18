@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Plus, Edit2, Trash2, X, Save, Loader2, Globe, Server, Users, Star } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Save, Loader2, Globe, Server, Users, Star, LayoutTemplate } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -321,14 +321,71 @@ function EquipoTab() {
   );
 }
 
+// ─── Hero Tab ─────────────────────────────────────────────────────────────────
+
+function HeroTab() {
+  const [titulo, setTitulo] = useState("");
+  const [subtitulo, setSubtitulo] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/configuracion")
+      .then((r) => r.json())
+      .then((d) => { setTitulo(d.hero_titulo || ""); setSubtitulo(d.hero_subtitulo || ""); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    if (!titulo.trim()) { toast.error("El título no puede estar vacío"); return; }
+    setSaving(true);
+    try {
+      const res = await fetch("/api/configuracion", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hero_titulo: titulo, hero_subtitulo: subtitulo }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("Hero actualizado");
+    } catch { toast.error("Error al guardar"); }
+    finally { setSaving(false); }
+  };
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 size={36} className="animate-spin" style={{ color: "var(--color-primary)" }} /></div>;
+
+  return (
+    <div className="max-w-2xl space-y-4">
+      <div className="card p-5 space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>Título principal</label>
+          <input value={titulo} onChange={(e) => setTitulo(e.target.value)} className="input-field" placeholder="Impulsa tu empresa con tecnología" />
+          <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>Incluye &quot; con &quot; para resaltar la segunda parte en color acento</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>Subtítulo / descripción</label>
+          <textarea value={subtitulo} onChange={(e) => setSubtitulo(e.target.value)} rows={4} className="input-field resize-none" placeholder="Software empresarial, infraestructura TI..." />
+        </div>
+        <div className="flex justify-end">
+          <button onClick={handleSave} disabled={saving} className="btn-primary">
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+            {saving ? "Guardando..." : "Guardar hero"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-type Tab = "servicios" | "equipo";
+type Tab = "hero" | "servicios" | "equipo";
 
 export default function AdminSecciones() {
   const [tab, setTab] = useState<Tab>("servicios");
 
   const TABS: { id: Tab; label: string; icon: typeof Globe }[] = [
+    { id: "hero",      label: "Hero",         icon: LayoutTemplate },
     { id: "servicios", label: "Servicios TI", icon: Globe },
     { id: "equipo",    label: "Equipo",       icon: Users },
   ];
@@ -356,8 +413,9 @@ export default function AdminSecciones() {
         ))}
       </div>
 
+      {tab === "hero"      && <HeroTab />}
       {tab === "servicios" && <ServiciosTab />}
-      {tab === "equipo" && <EquipoTab />}
+      {tab === "equipo"    && <EquipoTab />}
     </div>
   );
 }

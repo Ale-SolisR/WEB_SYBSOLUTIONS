@@ -1,16 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Play, CheckCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, Play, CheckCircle, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 
 const HIGHLIGHTS = [
   "ERP empresarial completo",
-  "Soporte técnico 24/7",
+  "Soporte técnico especializado",
   "Implementación ágil",
 ];
 
 export default function Hero() {
+  const [titulo, setTitulo] = useState("Impulsa tu empresa con tecnología");
+  const [subtitulo, setSubtitulo] = useState(
+    "Software empresarial, infraestructura TI y desarrollo web de alto impacto. Soluciones hechas en Costa Rica para el mundo."
+  );
+
+  useEffect(() => {
+    fetch("/api/configuracion")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.hero_titulo) setTitulo(d.hero_titulo);
+        if (d.hero_subtitulo) setSubtitulo(d.hero_subtitulo);
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <section
       className="relative min-h-screen flex items-center overflow-hidden gradient-hero hero-bg"
@@ -43,19 +59,21 @@ export default function Hero() {
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-white leading-tight mb-6">
-              Impulsa tu{" "}
-              <span className="relative">
-                <span className="relative z-10" style={{ color: "var(--color-accent)" }}>
-                  empresa
-                </span>
-                <span className="absolute -bottom-2 left-0 right-0 h-1 rounded-full opacity-60" style={{ background: "var(--color-accent)" }} />
-              </span>
-              {" "}con tecnología
+              {titulo.split(" con ").length > 1 ? (
+                <>
+                  {titulo.split(" con ")[0]} con{" "}
+                  <span className="relative">
+                    <span className="relative z-10" style={{ color: "var(--color-accent)" }}>
+                      {titulo.split(" con ")[1]}
+                    </span>
+                    <span className="absolute -bottom-2 left-0 right-0 h-1 rounded-full opacity-60" style={{ background: "var(--color-accent)" }} />
+                  </span>
+                </>
+              ) : titulo}
             </h1>
 
             <p className="text-xl text-blue-100 mb-8 leading-relaxed max-w-lg">
-              Software empresarial, infraestructura TI y desarrollo web de alto impacto.
-              Soluciones hechas en Costa Rica para el mundo.
+              {subtitulo}
             </p>
 
             <ul className="space-y-2 mb-10">
@@ -68,10 +86,10 @@ export default function Hero() {
             </ul>
 
             <div className="flex flex-wrap gap-4">
-              <Link href="/#contacto" className="btn-primary" style={{ background: "#fff", color: "var(--color-primary)" }}>
-                Contáctanos <ArrowRight size={18} />
+              <Link href="/#citas" className="btn-primary flex items-center gap-2" style={{ background: "#fff", color: "var(--color-primary)" }}>
+                <Calendar size={18} /> Agendar demo
               </Link>
-              <Link href="/#productos" className="btn-outline" style={{ borderColor: "rgba(255,255,255,0.5)", color: "#fff" }}>
+              <Link href="/#productos" className="btn-outline flex items-center gap-2" style={{ borderColor: "rgba(255,255,255,0.5)", color: "#fff" }}>
                 <Play size={18} /> Ver productos
               </Link>
             </div>

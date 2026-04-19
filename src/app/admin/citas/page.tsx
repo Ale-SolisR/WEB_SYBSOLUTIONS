@@ -58,8 +58,10 @@ export default function AdminCitas() {
 
   const filtered = filter === "todas" ? citas : citas.filter((c) => c.Estado === filter);
 
-  const formatDate = (d: string) =>
-    new Date(d + "T12:00:00").toLocaleDateString("es-CR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const formatDate = (d: string) => {
+    const datePart = d.includes("T") ? d.split("T")[0] : d;
+    return new Date(datePart + "T12:00:00").toLocaleDateString("es-CR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  };
 
   return (
     <div>

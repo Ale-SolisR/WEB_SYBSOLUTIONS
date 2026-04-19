@@ -29,6 +29,8 @@ export default function AdminVideos() {
   const [search, setSearch] = useState("");
   const [moduleFilter, setModuleFilter] = useState("Todos");
   const [thumbId, setThumbId] = useState("");
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 12;
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<VideoForm>({
     defaultValues: { Activo: true, Orden: 0, Categoria: "Inventario" },
@@ -105,6 +107,11 @@ export default function AdminVideos() {
     const matchSearch = !search || v.Titulo.toLowerCase().includes(search.toLowerCase());
     return matchModule && matchSearch;
   });
+
+  useEffect(() => { setPage(1); }, [search, moduleFilter]);
+
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
     <div className="max-w-5xl space-y-6">
@@ -252,65 +259,104 @@ export default function AdminVideos() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-1.5">
-          {filtered.map((v) => (
-            <motion.div
-              key={v.Id} layout
-              className="flex items-center gap-3 px-3 py-2 rounded-xl border"
-              style={{ background: "var(--color-surface)", borderColor: "var(--color-border)", opacity: v.Activo ? 1 : 0.55 }}
-            >
-              {/* Thumbnail */}
-              <div className="relative w-20 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black">
-                <Image
-                  src={getYoutubeThumbnail(v.YoutubeId)}
-                  alt={v.Titulo}
-                  fill
-                  className="object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${v.YoutubeId}/hqdefault.jpg`; }}
-                />
-                {!v.Activo && (
-                  <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.55)" }}>
-                    <EyeOff size={10} className="text-white" />
-                  </div>
-                )}
-              </div>
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium line-clamp-1" style={{ color: "var(--color-text)" }}>{v.Titulo}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xs px-1.5 py-0.5 rounded-full font-medium" style={{ background: "var(--color-surface-2)", color: "var(--color-text-muted)" }}>{v.Categoria}</span>
-                  <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>#{v.Orden}</span>
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" style={{ maxWidth: "fit-content" }}>
+            {paginated.map((v) => (
+              <motion.div
+                key={v.Id} layout
+                className="rounded-xl border overflow-hidden flex flex-col"
+                style={{ background: "var(--color-surface)", borderColor: "var(--color-border)", opacity: v.Activo ? 1 : 0.55, width: 180 }}
+              >
+                {/* Thumbnail */}
+                <div className="relative w-full bg-black" style={{ height: 100 }}>
+                  <Image
+                    src={getYoutubeThumbnail(v.YoutubeId)}
+                    alt={v.Titulo}
+                    fill
+                    className="object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${v.YoutubeId}/hqdefault.jpg`; }}
+                  />
+                  {!v.Activo && (
+                    <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.55)" }}>
+                      <span className="text-white text-xs font-semibold">Oculto</span>
+                    </div>
+                  )}
+                  <span className="absolute top-1.5 left-1.5 text-xs px-1.5 py-0.5 rounded-full font-medium" style={{ background: "rgba(0,0,0,0.65)", color: "#fff", fontSize: 10 }}>
+                    #{v.Orden}
+                  </span>
                 </div>
-              </div>
-              {/* Actions */}
-              <div className="flex items-center gap-1.5 flex-shrink-0">
+                {/* Info */}
+                <div className="px-2.5 pt-2 pb-1 flex-1">
+                  <p className="text-xs font-semibold line-clamp-2 leading-snug" style={{ color: "var(--color-text)" }}>{v.Titulo}</p>
+                  <span className="inline-block mt-1 text-xs px-1.5 py-0.5 rounded-full" style={{ background: "var(--color-surface-2)", color: "var(--color-text-muted)", fontSize: 10 }}>{v.Categoria}</span>
+                </div>
+                {/* Actions */}
+                <div className="flex items-center gap-1 px-2.5 pb-2.5 pt-1">
+                  <button
+                    onClick={() => openEdit(v)}
+                    className="flex-1 flex items-center justify-center gap-1 py-1 rounded-lg text-xs font-medium border hover:opacity-80 transition-opacity"
+                    style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}
+                  >
+                    <Edit2 size={11} /> Editar
+                  </button>
+                  <button
+                    onClick={() => toggleActive(v)}
+                    className="w-6 h-6 flex items-center justify-center rounded-lg border hover:opacity-70 transition-opacity"
+                    style={{ borderColor: "var(--color-border)", color: v.Activo ? "#f59e0b" : "#22c55e" }}
+                    title={v.Activo ? "Ocultar" : "Mostrar"}
+                  >
+                    {v.Activo ? <EyeOff size={11} /> : <Eye size={11} />}
+                  </button>
+                  <button
+                    onClick={() => deleteVideo(v.Id)}
+                    className="w-6 h-6 flex items-center justify-center rounded-lg border hover:opacity-70 transition-opacity"
+                    style={{ borderColor: "#fee2e2", color: "#ef4444" }}
+                    title="Eliminar"
+                  >
+                    <Trash2 size={11} />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-opacity disabled:opacity-30"
+                style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}
+              >
+                ← Anterior
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                 <button
-                  onClick={() => openEdit(v)}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border hover:opacity-80 transition-opacity"
-                  style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className="w-7 h-7 rounded-lg text-xs font-medium border transition-all"
+                  style={page === p
+                    ? { background: "var(--color-primary)", borderColor: "var(--color-primary)", color: "#fff" }
+                    : { borderColor: "var(--color-border)", color: "var(--color-text)" }}
                 >
-                  <Edit2 size={11} /> Editar
+                  {p}
                 </button>
-                <button
-                  onClick={() => toggleActive(v)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg border hover:opacity-70 transition-opacity"
-                  style={{ borderColor: "var(--color-border)", color: v.Activo ? "#f59e0b" : "#22c55e" }}
-                  title={v.Activo ? "Ocultar" : "Mostrar"}
-                >
-                  {v.Activo ? <EyeOff size={12} /> : <Eye size={12} />}
-                </button>
-                <button
-                  onClick={() => deleteVideo(v.Id)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg border hover:opacity-70 transition-opacity"
-                  style={{ borderColor: "#fee2e2", color: "#ef4444" }}
-                  title="Eliminar"
-                >
-                  <Trash2 size={12} />
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              ))}
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-opacity disabled:opacity-30"
+                style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}
+              >
+                Siguiente →
+              </button>
+              <span className="text-xs ml-1" style={{ color: "var(--color-text-muted)" }}>
+                {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, filtered.length)} de {filtered.length}
+              </span>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

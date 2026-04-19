@@ -260,12 +260,12 @@ export default function AdminVideos() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" style={{ maxWidth: "fit-content" }}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
             {paginated.map((v) => (
               <motion.div
                 key={v.Id} layout
                 className="rounded-xl border overflow-hidden flex flex-col"
-                style={{ background: "var(--color-surface)", borderColor: "var(--color-border)", opacity: v.Activo ? 1 : 0.55, width: 180 }}
+                style={{ background: "var(--color-surface)", borderColor: "var(--color-border)", opacity: v.Activo ? 1 : 0.55 }}
               >
                 {/* Thumbnail */}
                 <div className="relative w-full bg-black" style={{ height: 100 }}>

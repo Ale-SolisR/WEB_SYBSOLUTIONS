@@ -46,7 +46,7 @@ export default function Services() {
   }, []);
 
   return (
-    <section id="servicios" className="py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+    <section id="servicios" className="py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto scroll-mt-24">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -79,6 +79,7 @@ export default function Services() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.06 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
                 className="card p-4 group cursor-default"
               >
                 <div

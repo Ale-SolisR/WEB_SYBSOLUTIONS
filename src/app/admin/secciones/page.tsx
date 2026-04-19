@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Plus, Edit2, Trash2, X, Save, Loader2, Globe, Server, Users, Star, LayoutTemplate } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Save, Loader2, Globe, Users, LayoutTemplate } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
-
-// ─── Servicios ───────────────────────────────────────────────────────────────
 
 const ICON_OPTIONS = [
   "Globe","Server","Network","Cpu","GraduationCap","Headphones",
@@ -39,12 +37,9 @@ function ServiciosTab() {
   };
 
   const openEdit = (s: Servicio) => {
-    setValue("Titulo", s.Titulo);
-    setValue("Descripcion", s.Descripcion);
-    setValue("Icono", s.Icono);
-    setValue("Color", s.Color);
-    setValue("Activo", s.Activo);
-    setValue("Orden", s.Orden);
+    setValue("Titulo", s.Titulo); setValue("Descripcion", s.Descripcion);
+    setValue("Icono", s.Icono); setValue("Color", s.Color);
+    setValue("Activo", s.Activo); setValue("Orden", s.Orden);
     setEditId(s.Id);
     setShowForm(true);
   };
@@ -56,8 +51,7 @@ function ServiciosTab() {
       const res = await fetch(url, { method: editId ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
       if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
       toast.success(editId ? "Servicio actualizado" : "Servicio agregado");
-      setShowForm(false);
-      fetch_();
+      setShowForm(false); fetch_();
     } catch (e: any) { toast.error(e.message || "Error al guardar"); }
     finally { setSaving(false); }
   };
@@ -65,65 +59,64 @@ function ServiciosTab() {
   const del = async (id: number) => {
     if (!confirm("¿Eliminar este servicio?")) return;
     const res = await fetch(`/api/servicios/${id}`, { method: "DELETE" });
-    if (res.ok) { toast.success("Servicio eliminado"); fetch_(); }
-    else toast.error("Error");
+    if (res.ok) { toast.success("Eliminado"); fetch_(); } else toast.error("Error");
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>Servicios de TI</h2>
-        <button onClick={openNew} className="btn-primary text-sm py-2"><Plus size={16} /> Agregar</button>
+    <div className="space-y-5">
+      <div className="flex justify-between items-center">
+        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>Gestiona los servicios visibles en la landing</p>
+        <button onClick={openNew} className="btn-primary text-sm py-2 px-4"><Plus size={14} /> Agregar</button>
       </div>
 
       <AnimatePresence>
         {showForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}>
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              className="card p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-5">
-                <h3 className="text-lg font-bold" style={{ color: "var(--color-text)" }}>{editId ? "Editar servicio" : "Agregar servicio"}</h3>
-                <button onClick={() => setShowForm(false)} style={{ color: "var(--color-text-muted)" }}><X size={18} /></button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)" }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97, y: 6 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97, y: 6 }} transition={{ duration: 0.15 }}
+              className="w-full max-w-lg rounded-2xl shadow-2xl border max-h-[90vh] overflow-y-auto"
+              style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+            >
+              <div className="flex items-center justify-between px-6 py-4 border-b sticky top-0" style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+                <h3 className="text-base font-semibold" style={{ color: "var(--color-text)" }}>{editId ? "Editar servicio" : "Nuevo servicio"}</h3>
+                <button onClick={() => setShowForm(false)} className="p-1 rounded-lg hover:opacity-70" style={{ color: "var(--color-text-muted)" }}><X size={16} /></button>
               </div>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-5 space-y-4">
                 <div>
-                  <label className="text-sm font-medium block mb-1" style={{ color: "var(--color-text)" }}>Título *</label>
-                  <input {...register("Titulo", { required: "Requerido", minLength: { value: 3, message: "Mínimo 3 caracteres" } })}
-                    className="input-field" placeholder="Ej: Desarrollo Web" />
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Título *</label>
+                  <input {...register("Titulo", { required: "Requerido", minLength: { value: 3, message: "Mínimo 3 caracteres" } })} className="input-field text-sm" placeholder="Ej: Desarrollo Web" />
                   {errors.Titulo && <p className="text-xs text-red-500 mt-1">{errors.Titulo.message}</p>}
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1" style={{ color: "var(--color-text)" }}>Descripción *</label>
-                  <textarea {...register("Descripcion", { required: "Requerido", minLength: { value: 10, message: "Mínimo 10 caracteres" } })}
-                    className="input-field resize-none" rows={3} placeholder="Describe el servicio..." />
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Descripción *</label>
+                  <textarea {...register("Descripcion", { required: "Requerido", minLength: { value: 10, message: "Mínimo 10 caracteres" } })} className="input-field resize-none text-sm" rows={3} placeholder="Describe el servicio..." />
                   {errors.Descripcion && <p className="text-xs text-red-500 mt-1">{errors.Descripcion.message}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium block mb-1" style={{ color: "var(--color-text)" }}>Ícono</label>
-                    <select {...register("Icono")} className="input-field">
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Ícono</label>
+                    <select {...register("Icono")} className="input-field text-sm">
                       {ICON_OPTIONS.map(i => <option key={i} value={i}>{i}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-sm font-medium block mb-1" style={{ color: "var(--color-text)" }}>Color</label>
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Color</label>
                     <input type="color" {...register("Color")} className="input-field h-10 cursor-pointer p-1" />
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1" style={{ color: "var(--color-text)" }}>Orden</label>
-                  <input {...register("Orden", { valueAsNumber: true, min: { value: 0, message: "No puede ser negativo" } })}
-                    type="number" min={0} className="input-field" />
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Orden</label>
+                  <input {...register("Orden", { valueAsNumber: true, min: { value: 0, message: "No puede ser negativo" } })} type="number" min={0} className="input-field text-sm" />
                   {errors.Orden && <p className="text-xs text-red-500 mt-1">{errors.Orden.message}</p>}
                 </div>
                 {editId && (
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" {...register("Activo")} className="w-4 h-4" />
+                    <input type="checkbox" {...register("Activo")} className="w-4 h-4 rounded" />
                     <span className="text-sm" style={{ color: "var(--color-text)" }}>Visible en la página</span>
                   </label>
                 )}
-                <div className="flex gap-3 justify-end pt-2">
+                <div className="flex gap-3 justify-end pt-1">
                   <button type="button" onClick={() => setShowForm(false)} className="btn-outline py-2 px-4 text-sm">Cancelar</button>
                   <button type="submit" disabled={saving} className="btn-primary py-2 px-4 text-sm">
                     {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
@@ -136,41 +129,43 @@ function ServiciosTab() {
         )}
       </AnimatePresence>
 
-      {loading ? <div className="flex justify-center py-12"><Loader2 size={32} className="animate-spin" style={{ color: "var(--color-primary)" }} /></div> : (
-        <div className="space-y-3">
+      {loading ? (
+        <div className="flex justify-center py-12"><Loader2 size={28} className="animate-spin" style={{ color: "var(--color-primary)" }} /></div>
+      ) : items.length === 0 ? (
+        <div className="rounded-xl border py-12 text-center" style={{ borderColor: "var(--color-border)" }}>
+          <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>No hay servicios. ¡Agrega el primero!</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
           {items.map(s => (
-            <div key={s.Id} className="card px-5 py-4 flex items-center gap-4" style={{ opacity: s.Activo ? 1 : 0.5 }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: `${s.Color}20` }}>
-                <div className="w-5 h-5 rounded-full" style={{ background: s.Color }} />
+            <div
+              key={s.Id}
+              className="flex items-center gap-4 p-4 rounded-xl border"
+              style={{ borderColor: "var(--color-border)", background: "var(--color-surface)", opacity: s.Activo ? 1 : 0.5 }}
+            >
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${s.Color}18` }}>
+                <div className="w-3.5 h-3.5 rounded-full" style={{ background: s.Color }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm truncate" style={{ color: "var(--color-text)" }}>{s.Titulo}</p>
-                <p className="text-xs truncate" style={{ color: "var(--color-text-muted)" }}>{s.Descripcion.slice(0, 80)}...</p>
+                <p className="font-medium text-sm truncate" style={{ color: "var(--color-text)" }}>{s.Titulo}</p>
+                <p className="text-xs truncate mt-0.5" style={{ color: "var(--color-text-muted)" }}>{s.Descripcion.slice(0, 80)}{s.Descripcion.length > 80 ? "..." : ""}</p>
               </div>
-              <div className="text-xs" style={{ color: "var(--color-text-muted)" }}>#{s.Orden}</div>
-              <div className="flex gap-2 flex-shrink-0">
-                <button onClick={() => openEdit(s)} className="p-1.5 rounded-lg border"
-                  style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}>
-                  <Edit2 size={13} />
+              <span className="text-xs flex-shrink-0" style={{ color: "var(--color-text-muted)" }}>#{s.Orden}</span>
+              <div className="flex gap-1.5 flex-shrink-0">
+                <button onClick={() => openEdit(s)} className="w-8 h-8 flex items-center justify-center rounded-lg border hover:opacity-70 transition-opacity" style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}>
+                  <Edit2 size={12} />
                 </button>
-                <button onClick={() => del(s.Id)} className="p-1.5 rounded-lg border"
-                  style={{ borderColor: "#fee2e2", color: "#ef4444" }}>
-                  <Trash2 size={13} />
+                <button onClick={() => del(s.Id)} className="w-8 h-8 flex items-center justify-center rounded-lg border hover:opacity-70 transition-opacity" style={{ borderColor: "#fee2e2", color: "#ef4444" }}>
+                  <Trash2 size={12} />
                 </button>
               </div>
             </div>
           ))}
-          {items.length === 0 && (
-            <p className="text-center py-8" style={{ color: "var(--color-text-muted)" }}>No hay servicios. ¡Agrega el primero!</p>
-          )}
         </div>
       )}
     </div>
   );
 }
-
-// ─── Equipo ───────────────────────────────────────────────────────────────────
 
 interface Miembro { Id: number; Nombre: string; Cargo: string; Descripcion: string; FotoUrl: string; LinkedIn: string; Activo: boolean; Orden: number; }
 interface MiembroForm { Nombre: string; Cargo: string; Descripcion: string; FotoUrl: string; LinkedIn: string; Orden: number; Activo: boolean; }
@@ -193,14 +188,12 @@ function EquipoTab() {
 
   const openNew = () => {
     reset({ Nombre: "", Cargo: "", Descripcion: "", FotoUrl: "", LinkedIn: "", Activo: true, Orden: items.length });
-    setEditId(null);
-    setShowForm(true);
+    setEditId(null); setShowForm(true);
   };
 
   const openEdit = (m: Miembro) => {
     Object.entries(m).forEach(([k, v]) => setValue(k as keyof MiembroForm, v as any));
-    setEditId(m.Id);
-    setShowForm(true);
+    setEditId(m.Id); setShowForm(true);
   };
 
   const onSubmit = async (data: MiembroForm) => {
@@ -210,8 +203,7 @@ function EquipoTab() {
       const res = await fetch(url, { method: editId ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
       if (!res.ok) throw new Error();
       toast.success(editId ? "Miembro actualizado" : "Miembro agregado");
-      setShowForm(false);
-      fetch_();
+      setShowForm(false); fetch_();
     } catch { toast.error("Error al guardar"); }
     finally { setSaving(false); }
   };
@@ -223,61 +215,61 @@ function EquipoTab() {
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>Equipo</h2>
-        <button onClick={openNew} className="btn-primary text-sm py-2"><Plus size={16} /> Agregar</button>
+    <div className="space-y-5">
+      <div className="flex justify-between items-center">
+        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>Miembros del equipo visibles en la landing</p>
+        <button onClick={openNew} className="btn-primary text-sm py-2 px-4"><Plus size={14} /> Agregar</button>
       </div>
 
       <AnimatePresence>
         {showForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}>
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              className="card p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-5">
-                <h3 className="text-lg font-bold" style={{ color: "var(--color-text)" }}>{editId ? "Editar" : "Agregar"} miembro</h3>
-                <button onClick={() => setShowForm(false)} style={{ color: "var(--color-text-muted)" }}><X size={18} /></button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)" }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97, y: 6 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97, y: 6 }} transition={{ duration: 0.15 }}
+              className="w-full max-w-lg rounded-2xl shadow-2xl border max-h-[90vh] overflow-y-auto"
+              style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+            >
+              <div className="flex items-center justify-between px-6 py-4 border-b sticky top-0" style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+                <h3 className="text-base font-semibold" style={{ color: "var(--color-text)" }}>{editId ? "Editar" : "Nuevo"} miembro</h3>
+                <button onClick={() => setShowForm(false)} className="p-1 rounded-lg hover:opacity-70" style={{ color: "var(--color-text-muted)" }}><X size={16} /></button>
               </div>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-5 space-y-4">
                 <div>
-                  <label className="text-sm font-medium block mb-1" style={{ color: "var(--color-text)" }}>Nombre completo *</label>
-                  <input {...register("Nombre", { required: "Requerido" })} className="input-field" placeholder="Nombre" />
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Nombre completo *</label>
+                  <input {...register("Nombre", { required: "Requerido" })} className="input-field text-sm" placeholder="Nombre" />
                   {errors.Nombre && <p className="text-xs text-red-500 mt-1">{errors.Nombre.message}</p>}
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1" style={{ color: "var(--color-text)" }}>Cargo / Rol *</label>
-                  <input {...register("Cargo", { required: "Requerido" })} className="input-field" placeholder="Co-Fundador · Developer" />
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Cargo / Rol *</label>
+                  <input {...register("Cargo", { required: "Requerido" })} className="input-field text-sm" placeholder="Co-Fundador · Developer" />
                   {errors.Cargo && <p className="text-xs text-red-500 mt-1">{errors.Cargo.message}</p>}
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1" style={{ color: "var(--color-text)" }}>Descripción</label>
-                  <textarea {...register("Descripcion")} className="input-field resize-none" rows={4} />
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Descripción</label>
+                  <textarea {...register("Descripcion")} className="input-field resize-none text-sm" rows={3} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1" style={{ color: "var(--color-text)" }}>URL de foto</label>
-                  <input {...register("FotoUrl", {
-                    validate: v => !v || (() => { try { new URL(v); return true; } catch { return "URL inválida"; } })()
-                  })} className="input-field" placeholder="https://..." />
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>URL de foto</label>
+                  <input {...register("FotoUrl", { validate: v => !v || (() => { try { new URL(v); return true; } catch { return "URL inválida"; } })() })} className="input-field text-sm" placeholder="https://..." />
                   {errors.FotoUrl && <p className="text-xs text-red-500 mt-1">{errors.FotoUrl.message as string}</p>}
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1" style={{ color: "var(--color-text)" }}>LinkedIn URL</label>
-                  <input {...register("LinkedIn")} className="input-field" placeholder="https://linkedin.com/in/..." />
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>LinkedIn URL</label>
+                  <input {...register("LinkedIn")} className="input-field text-sm" placeholder="https://linkedin.com/in/..." />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1" style={{ color: "var(--color-text)" }}>Orden</label>
-                  <input {...register("Orden", { valueAsNumber: true, min: { value: 0, message: "No puede ser negativo" } })}
-                    type="number" min={0} className="input-field" />
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Orden</label>
+                  <input {...register("Orden", { valueAsNumber: true, min: { value: 0, message: "No puede ser negativo" } })} type="number" min={0} className="input-field text-sm" />
                   {errors.Orden && <p className="text-xs text-red-500 mt-1">{errors.Orden.message}</p>}
                 </div>
                 {editId && (
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" {...register("Activo")} className="w-4 h-4" />
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" {...register("Activo")} className="w-4 h-4 rounded" />
                     <span className="text-sm" style={{ color: "var(--color-text)" }}>Activo</span>
                   </label>
                 )}
-                <div className="flex gap-3 justify-end pt-2">
+                <div className="flex gap-3 justify-end pt-1">
                   <button type="button" onClick={() => setShowForm(false)} className="btn-outline py-2 px-4 text-sm">Cancelar</button>
                   <button type="submit" disabled={saving} className="btn-primary py-2 px-4 text-sm">
                     {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
@@ -290,26 +282,31 @@ function EquipoTab() {
         )}
       </AnimatePresence>
 
-      {loading ? <div className="flex justify-center py-12"><Loader2 size={32} className="animate-spin" style={{ color: "var(--color-primary)" }} /></div> : (
-        <div className="grid sm:grid-cols-2 gap-4">
+      {loading ? (
+        <div className="flex justify-center py-12"><Loader2 size={28} className="animate-spin" style={{ color: "var(--color-primary)" }} /></div>
+      ) : items.length === 0 ? (
+        <div className="rounded-xl border py-12 text-center" style={{ borderColor: "var(--color-border)" }}>
+          <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>No hay miembros. ¡Agrega el primero!</p>
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-3">
           {items.map(m => (
-            <div key={m.Id} className="card p-5" style={{ opacity: m.Activo ? 1 : 0.5 }}>
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-black flex-shrink-0"
-                  style={{ background: "var(--color-primary)", color: "#fff" }}>
-                  {m.Nombre.charAt(0)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm" style={{ color: "var(--color-text)" }}>{m.Nombre}</p>
-                  <p className="text-xs" style={{ color: "var(--color-primary)" }}>{m.Cargo}</p>
-                </div>
+            <div key={m.Id} className="card p-4 flex items-center gap-3" style={{ opacity: m.Activo ? 1 : 0.5 }}>
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                style={{ background: "color-mix(in srgb, var(--color-primary) 15%, transparent)", color: "var(--color-primary)" }}
+              >
+                {m.Nombre.charAt(0)}
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => openEdit(m)} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs border"
-                  style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}>
-                  <Edit2 size={12} /> Editar
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm truncate" style={{ color: "var(--color-text)" }}>{m.Nombre}</p>
+                <p className="text-xs truncate" style={{ color: "var(--color-primary)" }}>{m.Cargo}</p>
+              </div>
+              <div className="flex gap-1.5 flex-shrink-0">
+                <button onClick={() => openEdit(m)} className="w-8 h-8 flex items-center justify-center rounded-lg border hover:opacity-70 transition-opacity" style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}>
+                  <Edit2 size={12} />
                 </button>
-                <button onClick={() => del(m.Id)} className="p-1.5 rounded-lg border" style={{ borderColor: "#fee2e2", color: "#ef4444" }}>
+                <button onClick={() => del(m.Id)} className="w-8 h-8 flex items-center justify-center rounded-lg border hover:opacity-70 transition-opacity" style={{ borderColor: "#fee2e2", color: "#ef4444" }}>
                   <Trash2 size={12} />
                 </button>
               </div>
@@ -320,8 +317,6 @@ function EquipoTab() {
     </div>
   );
 }
-
-// ─── Hero Tab ─────────────────────────────────────────────────────────────────
 
 function HeroTab() {
   const [titulo, setTitulo] = useState("");
@@ -352,32 +347,31 @@ function HeroTab() {
     finally { setSaving(false); }
   };
 
-  if (loading) return <div className="flex justify-center py-20"><Loader2 size={36} className="animate-spin" style={{ color: "var(--color-primary)" }} /></div>;
+  if (loading) return <div className="flex justify-center py-20"><Loader2 size={28} className="animate-spin" style={{ color: "var(--color-primary)" }} /></div>;
 
   return (
-    <div className="max-w-2xl space-y-4">
+    <div className="max-w-xl space-y-4">
+      <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>Texto principal visible en la portada del sitio</p>
       <div className="card p-5 space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>Título principal</label>
-          <input value={titulo} onChange={(e) => setTitulo(e.target.value)} className="input-field" placeholder="Impulsa tu empresa con tecnología" />
-          <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>Incluye &quot; con &quot; para resaltar la segunda parte en color acento</p>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Título principal</label>
+          <input value={titulo} onChange={(e) => setTitulo(e.target.value)} className="input-field text-sm" placeholder="Impulsa tu empresa con tecnología" />
+          <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>Incluye " con " para resaltar la segunda parte en color acento</p>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>Subtítulo / descripción</label>
-          <textarea value={subtitulo} onChange={(e) => setSubtitulo(e.target.value)} rows={4} className="input-field resize-none" placeholder="Software empresarial, infraestructura TI..." />
+          <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Subtítulo / descripción</label>
+          <textarea value={subtitulo} onChange={(e) => setSubtitulo(e.target.value)} rows={4} className="input-field resize-none text-sm" placeholder="Software empresarial, infraestructura TI..." />
         </div>
         <div className="flex justify-end">
-          <button onClick={handleSave} disabled={saving} className="btn-primary">
-            {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-            {saving ? "Guardando..." : "Guardar hero"}
+          <button onClick={handleSave} disabled={saving} className="btn-primary text-sm py-2 px-4">
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {saving ? "Guardando..." : "Guardar"}
           </button>
         </div>
       </div>
     </div>
   );
 }
-
-// ─── Main Page ────────────────────────────────────────────────────────────────
 
 type Tab = "hero" | "servicios" | "equipo";
 
@@ -391,31 +385,40 @@ export default function AdminSecciones() {
   ];
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-black" style={{ color: "var(--color-text)" }}>Secciones de la Página</h1>
-        <p className="mt-1" style={{ color: "var(--color-text-muted)" }}>
+    <div className="max-w-4xl space-y-6">
+      <div>
+        <h1 className="text-xl font-semibold" style={{ color: "var(--color-text)" }}>Secciones</h1>
+        <p className="text-sm mt-0.5" style={{ color: "var(--color-text-muted)" }}>
           Edita el contenido visible en el sitio web
         </p>
       </div>
 
-      {/* Tab nav */}
-      <div className="flex gap-2 mb-8 border-b pb-0" style={{ borderColor: "var(--color-border)" }}>
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ background: "var(--color-surface-2)" }}>
         {TABS.map(({ id, label, icon: Icon }) => (
-          <button key={id} onClick={() => setTab(id)}
-            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all"
-            style={{
-              borderColor: tab === id ? "var(--color-primary)" : "transparent",
-              color: tab === id ? "var(--color-primary)" : "var(--color-text-muted)",
-            }}>
-            <Icon size={15} /> {label}
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            style={tab === id ? {
+              background: "var(--color-surface)",
+              color: "var(--color-primary)",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+            } : {
+              background: "transparent",
+              color: "var(--color-text-muted)",
+            }}
+          >
+            <Icon size={14} /> {label}
           </button>
         ))}
       </div>
 
-      {tab === "hero"      && <HeroTab />}
-      {tab === "servicios" && <ServiciosTab />}
-      {tab === "equipo"    && <EquipoTab />}
+      <div>
+        {tab === "hero"      && <HeroTab />}
+        {tab === "servicios" && <ServiciosTab />}
+        {tab === "equipo"    && <EquipoTab />}
+      </div>
     </div>
   );
 }

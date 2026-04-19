@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Plus, Edit2, Trash2, X, Save, Loader2, Building2, ImageOff } from "lucide-react";
 import toast from "react-hot-toast";
-import Image from "next/image";
 import type { Cliente } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -22,19 +21,19 @@ function ImagePreview({ url }: { url: string }) {
   useEffect(() => { setError(false); setLoading(true); }, [url]);
 
   if (!url.trim()) return (
-    <div className="flex items-center justify-center h-20 rounded-xl"
+    <div className="flex items-center justify-center h-16 rounded-xl"
       style={{ background: "var(--color-surface-2)", border: "1px dashed var(--color-border)" }}>
       <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>Vista previa del logo</p>
     </div>
   );
 
   return (
-    <div className="relative flex items-center justify-center h-20 rounded-xl overflow-hidden"
+    <div className="relative flex items-center justify-center h-16 rounded-xl overflow-hidden"
       style={{ background: "var(--color-surface-2)", border: "1px solid var(--color-border)" }}>
-      {loading && <Loader2 size={18} className="animate-spin absolute" style={{ color: "var(--color-primary)" }} />}
+      {loading && <Loader2 size={16} className="animate-spin absolute" style={{ color: "var(--color-primary)" }} />}
       {error ? (
         <div className="flex flex-col items-center gap-1">
-          <ImageOff size={20} style={{ color: "var(--color-text-muted)" }} />
+          <ImageOff size={16} style={{ color: "var(--color-text-muted)" }} />
           <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>URL inválida</p>
         </div>
       ) : (
@@ -42,7 +41,7 @@ function ImagePreview({ url }: { url: string }) {
         <img
           src={url}
           alt="Preview"
-          className="max-h-16 max-w-full object-contain"
+          className="max-h-12 max-w-full object-contain"
           style={{ display: loading ? "none" : "block" }}
           onLoad={() => setLoading(false)}
           onError={() => { setError(true); setLoading(false); }}
@@ -77,7 +76,7 @@ export default function AdminClientes() {
   useEffect(() => { fetchClientes(); }, []);
 
   const openNew = () => {
-    reset({ Nombre: "", LogoUrl: "", Orden: Math.max(0, clientes.length), Activo: true });
+    reset({ Nombre: "", LogoUrl: "", Orden: clientes.length, Activo: true });
     setPreviewUrl("");
     setEditingId(null);
     setShowForm(true);
@@ -115,103 +114,87 @@ export default function AdminClientes() {
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
+    <div className="max-w-4xl space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black" style={{ color: "var(--color-text)" }}>Clientes</h1>
-          <p className="mt-1" style={{ color: "var(--color-text-muted)" }}>
-            Logos y nombres visibles en la página principal
+          <h1 className="text-xl font-semibold" style={{ color: "var(--color-text)" }}>Clientes</h1>
+          <p className="text-sm mt-0.5" style={{ color: "var(--color-text-muted)" }}>
+            Logos visibles en la página principal
           </p>
         </div>
-        <button onClick={openNew} className="btn-primary"><Plus size={18} /> Agregar cliente</button>
+        <button onClick={openNew} className="btn-primary text-sm py-2 px-4">
+          <Plus size={15} /> Agregar
+        </button>
       </div>
 
+      {/* Modal */}
       <AnimatePresence>
         {showForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}>
+            style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)" }}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="card p-6 w-full max-w-md"
+              initial={{ opacity: 0, scale: 0.97, y: 6 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97, y: 6 }}
+              transition={{ duration: 0.15 }}
+              className="w-full max-w-md rounded-2xl shadow-2xl border"
+              style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
             >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>
-                  {editingId ? "Editar cliente" : "Agregar cliente"}
+              <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: "var(--color-border)" }}>
+                <h2 className="text-base font-semibold" style={{ color: "var(--color-text)" }}>
+                  {editingId ? "Editar cliente" : "Nuevo cliente"}
                 </h2>
-                <button onClick={() => setShowForm(false)} style={{ color: "var(--color-text-muted)" }}>
-                  <X size={20} />
+                <button onClick={() => setShowForm(false)} className="p-1 rounded-lg hover:opacity-70" style={{ color: "var(--color-text-muted)" }}>
+                  <X size={16} />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-5 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>
-                    Nombre *
-                  </label>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Nombre *</label>
                   <input
-                    {...register("Nombre", {
-                      required: "El nombre es requerido",
-                      minLength: { value: 2, message: "Mínimo 2 caracteres" },
-                    })}
-                    className="input-field"
+                    {...register("Nombre", { required: "El nombre es requerido", minLength: { value: 2, message: "Mínimo 2 caracteres" } })}
+                    className="input-field text-sm"
                     placeholder="Nombre de la empresa"
                   />
                   {errors.Nombre && <p className="text-xs text-red-500 mt-1">{errors.Nombre.message}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>
-                    URL del logo
-                  </label>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>URL del logo</label>
                   <input
                     {...register("LogoUrl", {
-                      validate: (v) => {
-                        if (!v) return true;
-                        try { new URL(v); return true; }
-                        catch { return "Debe ser una URL válida (https://...)"; }
-                      },
+                      validate: (v) => { if (!v) return true; try { new URL(v); return true; } catch { return "Debe ser una URL válida"; } },
                     })}
-                    className="input-field"
+                    className="input-field text-sm"
                     placeholder="https://ejemplo.com/logo.png"
                   />
                   {errors.LogoUrl && <p className="text-xs text-red-500 mt-1">{errors.LogoUrl.message}</p>}
                 </div>
 
-                {/* Live image preview */}
                 <ImagePreview url={previewUrl} />
 
                 <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>
-                    Orden de visualización
-                  </label>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Orden</label>
                   <input
-                    {...register("Orden", {
-                      valueAsNumber: true,
-                      min: { value: 0, message: "El orden no puede ser negativo" },
-                      validate: (v) => Number.isInteger(v) || "Debe ser un número entero",
-                    })}
-                    type="number"
-                    min={0}
-                    className="input-field"
+                    {...register("Orden", { valueAsNumber: true, min: { value: 0, message: "No puede ser negativo" } })}
+                    type="number" min={0} className="input-field text-sm"
                   />
                   {errors.Orden && <p className="text-xs text-red-500 mt-1">{errors.Orden.message}</p>}
                 </div>
 
                 {editingId && (
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" {...register("Activo")} className="w-4 h-4" />
+                    <input type="checkbox" {...register("Activo")} className="w-4 h-4 rounded" />
                     <span className="text-sm" style={{ color: "var(--color-text)" }}>Visible en la página</span>
                   </label>
                 )}
 
-                <div className="flex gap-3 justify-end pt-2">
-                  <button type="button" onClick={() => setShowForm(false)} className="btn-outline py-2 px-4 text-sm">
-                    Cancelar
-                  </button>
+                <div className="flex gap-3 justify-end pt-1">
+                  <button type="button" onClick={() => setShowForm(false)} className="btn-outline py-2 px-4 text-sm">Cancelar</button>
                   <button type="submit" disabled={saving} className="btn-primary py-2 px-4 text-sm">
-                    {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                    {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                     {saving ? "Guardando..." : "Guardar"}
                   </button>
                 </div>
@@ -221,51 +204,62 @@ export default function AdminClientes() {
         )}
       </AnimatePresence>
 
+      {/* Grid */}
       {loading ? (
         <div className="flex justify-center py-20">
-          <Loader2 size={36} className="animate-spin" style={{ color: "var(--color-primary)" }} />
+          <Loader2 size={28} className="animate-spin" style={{ color: "var(--color-primary)" }} />
+        </div>
+      ) : clientes.length === 0 ? (
+        <div className="rounded-xl border py-16 text-center" style={{ borderColor: "var(--color-border)" }}>
+          <Building2 size={32} className="mx-auto mb-3 opacity-25" style={{ color: "var(--color-text-muted)" }} />
+          <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>No hay clientes. ¡Agrega el primero!</p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {clientes.map((c) => (
-            <motion.div key={c.Id} layout
-              className="card p-5 flex flex-col items-center gap-3 text-center"
-              style={{ opacity: c.Activo ? 1 : 0.5 }}>
-              {c.LogoUrl ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={c.LogoUrl} alt={c.Nombre} className="object-contain h-12 w-auto max-w-full" />
-              ) : (
-                <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-black"
-                  style={{ background: "var(--color-primary)", color: "#fff" }}>
-                  {c.Nombre.charAt(0)}
-                </div>
-              )}
-              <div>
-                <p className="font-semibold text-sm" style={{ color: "var(--color-text)" }}>{c.Nombre}</p>
-                <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-                  Orden #{c.Orden} {!c.Activo && "· Oculto"}
+            <motion.div
+              key={c.Id}
+              layout
+              className="card p-4 flex flex-col items-center gap-3 text-center"
+              style={{ opacity: c.Activo ? 1 : 0.5 }}
+            >
+              <div className="flex items-center justify-center h-12 w-full">
+                {c.LogoUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={c.LogoUrl} alt={c.Nombre} className="object-contain max-h-12 max-w-full" />
+                ) : (
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold"
+                    style={{ background: "var(--color-primary)", color: "#fff" }}
+                  >
+                    {c.Nombre.charAt(0)}
+                  </div>
+                )}
+              </div>
+              <div className="w-full">
+                <p className="font-medium text-xs truncate" style={{ color: "var(--color-text)" }}>{c.Nombre}</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--color-text-muted)" }}>
+                  #{c.Orden}{!c.Activo && " · Oculto"}
                 </p>
               </div>
-              <div className="flex gap-2 w-full">
-                <button onClick={() => openEdit(c)}
-                  className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs border"
-                  style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}>
-                  <Edit2 size={13} /> Editar
+              <div className="flex gap-1.5 w-full">
+                <button
+                  onClick={() => openEdit(c)}
+                  className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs border hover:opacity-80 transition-opacity"
+                  style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}
+                >
+                  <Edit2 size={11} /> Editar
                 </button>
-                <button onClick={() => deleteCliente(c.Id)}
-                  className="p-1.5 rounded-lg border"
-                  style={{ borderColor: "#fee2e2", color: "#ef4444" }}>
-                  <Trash2 size={13} />
+                <button
+                  onClick={() => deleteCliente(c.Id)}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg border hover:opacity-70 transition-opacity"
+                  style={{ borderColor: "#fee2e2", color: "#ef4444" }}
+                >
+                  <Trash2 size={11} />
                 </button>
               </div>
             </motion.div>
           ))}
-          {clientes.length === 0 && (
-            <div className="col-span-full card p-12 text-center" style={{ color: "var(--color-text-muted)" }}>
-              <Building2 size={40} className="mx-auto mb-3 opacity-30" />
-              <p>No hay clientes. ¡Agrega el primero!</p>
-            </div>
-          )}
         </div>
       )}
     </div>

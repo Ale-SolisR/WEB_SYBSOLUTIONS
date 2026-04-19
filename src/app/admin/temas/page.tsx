@@ -47,62 +47,59 @@ export default function AdminTemas() {
   };
 
   return (
-    <div>
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "var(--color-primary)" }}>
-            <Palette size={20} color="#fff" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-black" style={{ color: "var(--color-text)" }}>Temas y Colores</h1>
-            <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-              El tema seleccionado se aplica a toda la página para todos los visitantes
-            </p>
-          </div>
-        </div>
+    <div className="max-w-4xl space-y-6">
+      <div>
+        <h1 className="text-xl font-semibold" style={{ color: "var(--color-text)" }}>Temas</h1>
+        <p className="text-sm mt-0.5" style={{ color: "var(--color-text-muted)" }}>
+          El tema activo se aplica a toda la página para todos los visitantes
+        </p>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         {THEMES.map((t) => (
           <button
             key={t.id}
             onClick={() => handleSelect(t.id)}
-            className="card p-5 text-left transition-all hover:scale-[1.02]"
+            className="card p-4 text-left transition-all hover:shadow-md"
             style={{
               borderWidth: activeTheme === t.id ? 2 : 1,
               borderColor: activeTheme === t.id ? t.color : "var(--color-border)",
-              boxShadow: activeTheme === t.id ? `0 0 0 3px ${t.color}22` : undefined,
+              boxShadow: activeTheme === t.id ? `0 0 0 3px ${t.color}18` : undefined,
             }}
           >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-inner"
-                style={{ background: t.color }}>
+            <div className="flex items-center justify-between mb-3">
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center text-lg"
+                style={{ background: t.color }}
+              >
                 {t.emoji}
               </div>
               {activeTheme === t.id && (
-                <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full"
-                  style={{ background: `${t.color}18`, color: t.color }}>
+                <span
+                  className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                  style={{ background: `${t.color}18`, color: t.color }}
+                >
                   Activo
                 </span>
               )}
             </div>
-            <p className="font-semibold" style={{ color: "var(--color-text)" }}>{t.label}</p>
+            <p className="font-medium text-sm" style={{ color: "var(--color-text)" }}>{t.label}</p>
             <p className="text-xs mt-0.5" style={{ color: "var(--color-text-muted)" }}>{t.desc}</p>
           </button>
         ))}
       </div>
 
-      <div className="card p-6 flex items-center justify-between max-w-lg">
+      <div className="card p-5 flex items-center justify-between">
         <div>
-          <p className="font-semibold" style={{ color: "var(--color-text)" }}>
-            Tema seleccionado: {THEMES.find(t => t.id === activeTheme)?.emoji} {THEMES.find(t => t.id === activeTheme)?.label}
+          <p className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
+            {THEMES.find(t => t.id === activeTheme)?.emoji} {THEMES.find(t => t.id === activeTheme)?.label}
           </p>
-          <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+          <p className="text-xs mt-0.5" style={{ color: "var(--color-text-muted)" }}>
             Guarda para aplicarlo a todos los visitantes
           </p>
         </div>
         <button onClick={handleSave} disabled={saving} className="btn-primary">
-          {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
           {saving ? "Guardando..." : "Guardar tema"}
         </button>
       </div>

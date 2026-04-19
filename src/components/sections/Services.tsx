@@ -46,15 +46,15 @@ export default function Services() {
   }, []);
 
   return (
-    <section id="servicios" className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <section id="servicios" className="py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="text-center mb-16"
+        className="text-center mb-10"
       >
-        <span className="badge mb-4">Nuestros Servicios</span>
+        <span className="badge mb-3">Nuestros Servicios</span>
         <h2 className="section-title">Soluciones TI integrales</h2>
         <p className="section-subtitle">
           Todo lo que tu empresa necesita en tecnología, en un solo lugar.
@@ -62,35 +62,35 @@ export default function Services() {
       </motion.div>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="card p-6 animate-pulse h-48"
+            <div key={i} className="card p-4 animate-pulse h-32"
               style={{ background: "var(--color-border)" }} />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
           {servicios.map((svc, i) => {
             const Icon = getIcon(svc.Icono);
             return (
               <motion.div
                 key={svc.Id}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.08 }}
-                className="card p-6 group cursor-default"
+                transition={{ duration: 0.4, delay: i * 0.06 }}
+                className="card p-4 group cursor-default"
               >
                 <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
+                  className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 transition-transform group-hover:scale-110"
                   style={{ background: `${svc.Color}18` }}
                 >
-                  <Icon size={24} style={{ color: svc.Color }} />
+                  <Icon size={18} style={{ color: svc.Color }} />
                 </div>
-                <h3 className="font-bold text-lg mb-2" style={{ color: "var(--color-text)" }}>
+                <h3 className="font-bold text-sm mb-1" style={{ color: "var(--color-text)" }}>
                   {svc.Titulo}
                 </h3>
-                <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
+                <p className="text-xs leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
                   {svc.Descripcion}
                 </p>
               </motion.div>

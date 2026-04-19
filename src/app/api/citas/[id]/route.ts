@@ -29,15 +29,22 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (!cita) return NextResponse.json({ error: "No encontrada" }, { status: 404 });
 
     if (Estado === "confirmada") {
-      // Create Google Calendar event + Meet
       let meetLink: string | null = null;
       let googleEventId: string | null = null;
+
+      // FechaCita from mssql DATE column may be a Date object or string
+      const fechaStr = cita.FechaCita instanceof Date
+        ? cita.FechaCita.toISOString().split("T")[0]
+        : String(cita.FechaCita).split("T")[0];
+
+      const horaStr = String(cita.HoraCita).substring(0, 5);
+
       try {
         const calResult = await createCalendarEvent({
           summary: `Demo S&B ERP – ${cita.NombreCompleto}`,
           description: `Demo del S&B ERP\n\nCliente: ${cita.NombreCompleto}\nCédula: ${cita.Cedula}\nTeléfono: ${cita.Telefono}\nNota: ${cita.Nota || "—"}`,
-          date: cita.FechaCita.toISOString().split("T")[0],
-          time: cita.HoraCita.substring(0, 5),
+          date: fechaStr,
+          time: horaStr,
           attendeeEmail: cita.Email,
           attendeeName: cita.NombreCompleto,
         });
@@ -50,16 +57,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       await pool.request()
         .input("Id",            sql.Int,      Number(id))
         .input("Estado",        sql.NVarChar, "confirmada")
-        .input("GoogleEventId", sql.NVarChar, googleEventId || "")
-        .input("MeetLink",      sql.NVarChar, meetLink || "")
+        .input("GoogleEventId", sql.NVarChar, googleEventId ?? "")
+        .input("MeetLink",      sql.NVarChar, meetLink ?? "")
         .query("UPDATE web.CITAS SET Estado=@Estado, GoogleEventId=@GoogleEventId, MeetLink=@MeetLink WHERE Id=@Id");
 
       try {
         await sendCitaConfirmada({
           to:       cita.Email,
           nombre:   cita.NombreCompleto,
-          fecha:    cita.FechaCita.toISOString().split("T")[0],
-          hora:     cita.HoraCita.substring(0, 5),
+          fecha:    fechaStr,
+          hora:     horaStr,
           meetLink,
         });
       } catch (mailErr) {
@@ -70,14 +77,19 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     if (Estado === "cancelada") {
-      // Cancel Google Calendar event if exists
-      if (cita.GoogleEventId) {
+      const googleEventId = cita.GoogleEventId?.trim();
+      if (googleEventId) {
         try {
-          await cancelCalendarEvent(cita.GoogleEventId);
+          await cancelCalendarEvent(googleEventId);
         } catch (calErr) {
           console.error("Calendar cancel error:", calErr);
         }
       }
+
+      const fechaStr = cita.FechaCita instanceof Date
+        ? cita.FechaCita.toISOString().split("T")[0]
+        : String(cita.FechaCita).split("T")[0];
+      const horaStr = String(cita.HoraCita).substring(0, 5);
 
       await pool.request()
         .input("Id",     sql.Int,      Number(id))
@@ -88,8 +100,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         await sendCitaCancelada({
           to:     cita.Email,
           nombre: cita.NombreCompleto,
-          fecha:  cita.FechaCita.toISOString().split("T")[0],
-          hora:   cita.HoraCita.substring(0, 5),
+          fecha:  fechaStr,
+          hora:   horaStr,
         });
       } catch (mailErr) {
         console.error("Email error:", mailErr);
@@ -98,14 +110,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       return NextResponse.json({ success: true });
     }
 
-    // Estado = "pendiente" — just update, no calendar/email action
+    // Estado = "pendiente"
     await pool.request()
       .input("Id",     sql.Int,      Number(id))
       .input("Estado", sql.NVarChar, "pendiente")
       .query("UPDATE web.CITAS SET Estado=@Estado WHERE Id=@Id");
 
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Error" }, { status: 500 });
+  } catch (err) {
+    console.error("PATCH /api/citas/[id] error:", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: "Error", detail: msg }, { status: 500 });
   }
 }

@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getPool, sql } from "@/lib/db";
-import { createCalendarEvent } from "@/lib/googleCalendar";
-import { sendCitaConfirmation } from "@/lib/mailer";
+import { sendCitaRecibida } from "@/lib/mailer";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -78,39 +77,13 @@ export async function POST(req: NextRequest) {
 
     const newId = result.recordset[0].Id;
 
-    // --- Google Calendar event (non-blocking, best-effort) ---
-    let meetLink: string | null = null;
+    // --- Notification email: solicitud recibida (non-blocking) ---
     try {
-      const calResult = await createCalendarEvent({
-        summary: `Demo S&B ERP – ${NombreCompleto.trim()}`,
-        description:
-          `Solicitud de demo del S&B ERP\n\nCliente: ${NombreCompleto.trim()}\nCédula: ${Cedula.trim()}\nTeléfono: ${Telefono.trim()}\nNota: ${Nota || "—"}`,
-        date: FechaCita,
-        time: HoraCita,
-        attendeeEmail: Email.trim(),
-        attendeeName: NombreCompleto.trim(),
-      });
-
-      if (calResult.eventId || calResult.meetLink) {
-        meetLink = calResult.meetLink;
-        await pool.request()
-          .input("Id",            sql.Int,      newId)
-          .input("GoogleEventId", sql.NVarChar, calResult.eventId || "")
-          .input("MeetLink",      sql.NVarChar, calResult.meetLink || "")
-          .query("UPDATE web.CITAS SET GoogleEventId=@GoogleEventId, MeetLink=@MeetLink WHERE Id=@Id");
-      }
-    } catch (calErr) {
-      console.error("Calendar integration error:", calErr);
-    }
-
-    // --- Confirmation email (non-blocking, best-effort) ---
-    try {
-      await sendCitaConfirmation({
-        to:       Email.trim(),
-        nombre:   NombreCompleto.trim(),
-        fecha:    FechaCita,
-        hora:     HoraCita,
-        meetLink,
+      await sendCitaRecibida({
+        to:     Email.trim(),
+        nombre: NombreCompleto.trim(),
+        fecha:  FechaCita,
+        hora:   HoraCita,
       });
     } catch (mailErr) {
       console.error("Email error:", mailErr);

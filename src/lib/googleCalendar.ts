@@ -6,14 +6,15 @@ export interface CalendarEventResult {
   htmlLink: string | null;
 }
 
-function getAuth() {
-  const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
-  if (!clientEmail || !privateKey) return null;
-  return new google.auth.GoogleAuth({
-    credentials: { client_email: clientEmail, private_key: privateKey },
-    scopes: ["https://www.googleapis.com/auth/calendar"],
-  });
+function getOAuth2Client() {
+  const clientId     = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+  if (!clientId || !clientSecret || !refreshToken) return null;
+
+  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, "http://localhost");
+  oauth2Client.setCredentials({ refresh_token: refreshToken });
+  return oauth2Client;
 }
 
 export async function createCalendarEvent({
@@ -31,16 +32,16 @@ export async function createCalendarEvent({
   attendeeEmail: string;
   attendeeName: string;
 }): Promise<CalendarEventResult> {
-  const auth = getAuth();
+  const auth = getOAuth2Client();
   if (!auth) return { eventId: null, meetLink: null, htmlLink: null };
 
   try {
-    const calendar = google.calendar({ version: "v3", auth });
+    const calendar   = google.calendar({ version: "v3", auth });
     const calendarId = process.env.GOOGLE_CALENDAR_ID || "primary";
 
     const [hh, mm] = time.split(":").map(Number);
-    const totalEnd = hh * 60 + mm + 45;
-    const endTime = `${String(Math.floor(totalEnd / 60)).padStart(2, "0")}:${String(totalEnd % 60).padStart(2, "0")}`;
+    const totalEnd  = hh * 60 + mm + 45;
+    const endTime   = `${String(Math.floor(totalEnd / 60)).padStart(2, "0")}:${String(totalEnd % 60).padStart(2, "0")}`;
 
     const event = await calendar.events.insert({
       calendarId,
@@ -81,5 +82,19 @@ export async function createCalendarEvent({
   } catch (err) {
     console.error("Google Calendar error:", err);
     return { eventId: null, meetLink: null, htmlLink: null };
+  }
+}
+
+export async function cancelCalendarEvent(eventId: string): Promise<boolean> {
+  const auth = getOAuth2Client();
+  if (!auth) return false;
+  try {
+    const calendar   = google.calendar({ version: "v3", auth });
+    const calendarId = process.env.GOOGLE_CALENDAR_ID || "primary";
+    await calendar.events.delete({ calendarId, eventId, sendUpdates: "all" });
+    return true;
+  } catch (err) {
+    console.error("Google Calendar cancel error:", err);
+    return false;
   }
 }

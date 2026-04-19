@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, Loader2, CheckCircle, XCircle, Clock, Phone, Mail, User } from "lucide-react";
+import { Calendar, Loader2, CheckCircle, XCircle, Clock, Phone, Mail, Video } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface Cita {
@@ -17,6 +17,8 @@ interface Cita {
   Nota: string;
   Estado: "pendiente" | "confirmada" | "cancelada";
   CreadoEn: string;
+  MeetLink: string | null;
+  GoogleEventId: string | null;
 }
 
 const ESTADO_COLORS: Record<string, { bg: string; text: string; label: string }> = {
@@ -154,6 +156,18 @@ export default function AdminCitas() {
                       <p className="text-xs mt-3 px-3 py-2 rounded-lg" style={{ background: "var(--color-surface-2)", color: "var(--color-text-muted)" }}>
                         <span className="font-semibold">Nota:</span> {c.Nota}
                       </p>
+                    )}
+                    {c.MeetLink && (
+                      <a
+                        href={c.MeetLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-xs mt-2 px-3 py-2 rounded-lg font-medium w-fit"
+                        style={{ background: "#e8f5e9", color: "#166534" }}
+                      >
+                        <Video size={12} />
+                        Unirse a Google Meet
+                      </a>
                     )}
                   </div>
 

@@ -171,23 +171,21 @@ export default function AdminVideos() {
               <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-5 space-y-4">
                 <div>
                   <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>URL de YouTube *</label>
-                  <input {...register("YoutubeUrl", { required: "Requerido" })} className="input-field text-sm" placeholder="https://youtu.be/..." />
-                  {errors.YoutubeUrl && <p className="text-xs text-red-500 mt-1">{errors.YoutubeUrl.message}</p>}
-                  <div className="mt-2 rounded-xl overflow-hidden relative aspect-video"
-                    style={{ background: "var(--color-surface-2)", border: "1px dashed var(--color-border)" }}>
-                    {thumbId ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={getYoutubeThumbnail(thumbId)}
-                        alt="Miniatura"
-                        className="w-full h-full object-cover"
-                        onError={(e) => { (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${thumbId}/hqdefault.jpg`; }}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>Vista previa de miniatura</p>
-                      </div>
-                    )}
+                  <div className="flex gap-3 items-start">
+                    <div className="flex-1">
+                      <input {...register("YoutubeUrl", { required: "Requerido" })} className="input-field text-sm" placeholder="https://youtu.be/..." />
+                      {errors.YoutubeUrl && <p className="text-xs text-red-500 mt-1">{errors.YoutubeUrl.message}</p>}
+                    </div>
+                    <div className="w-28 h-16 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center"
+                      style={{ background: "var(--color-surface-2)", border: "1px dashed var(--color-border)" }}>
+                      {thumbId ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img src={getYoutubeThumbnail(thumbId)} alt="Miniatura" className="w-full h-full object-cover"
+                          onError={(e) => { (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${thumbId}/hqdefault.jpg`; }} />
+                      ) : (
+                        <p className="text-xs text-center px-1" style={{ color: "var(--color-text-muted)" }}>Preview</p>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div>

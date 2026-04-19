@@ -338,12 +338,17 @@ function EquipoTab() {
         <div className="grid sm:grid-cols-2 gap-3">
           {items.map(m => (
             <div key={m.Id} className="card p-4 flex items-center gap-3" style={{ opacity: m.Activo ? 1 : 0.5 }}>
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                style={{ background: "color-mix(in srgb, var(--color-primary) 15%, transparent)", color: "var(--color-primary)" }}
-              >
-                {m.Nombre.charAt(0)}
-              </div>
+              {m.FotoUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={m.FotoUrl} alt={m.Nombre} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+              ) : (
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                  style={{ background: "color-mix(in srgb, var(--color-primary) 15%, transparent)", color: "var(--color-primary)" }}
+                >
+                  {m.Nombre.charAt(0)}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate" style={{ color: "var(--color-text)" }}>{m.Nombre}</p>
                 <p className="text-xs truncate" style={{ color: "var(--color-primary)" }}>{m.Cargo}</p>

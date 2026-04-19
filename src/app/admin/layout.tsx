@@ -139,7 +139,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <button className="md:hidden p-1.5 rounded-lg" onClick={() => setMobileOpen(true)} style={{ color: "var(--color-text)" }}>
             <Menu size={20} />
           </button>
-          <Image src="/images/LogoLargo.PNG" alt="SYB" width={120} height={36} className="h-8 w-auto object-contain" />
+          <Image src="/images/LogoLargo.PNG" alt="SYB" width={200} height={60} className="h-14 w-auto object-contain" />
           <div className="ml-auto flex items-center gap-2">
             <Link href="/" className="text-xs hover:opacity-70" style={{ color: "var(--color-text-muted)" }}>
               Ver sitio →

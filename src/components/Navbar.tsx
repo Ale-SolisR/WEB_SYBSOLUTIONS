@@ -46,9 +46,9 @@ export default function Navbar() {
           <Image
             src="/images/LogoLargo.PNG"
             alt="S&B Solutions"
-            width={260}
-            height={80}
-            className="h-16 w-auto object-contain transition-transform group-hover:scale-105"
+            width={360}
+            height={110}
+            className="h-24 w-auto object-contain transition-transform group-hover:scale-105"
             priority
           />
         </Link>

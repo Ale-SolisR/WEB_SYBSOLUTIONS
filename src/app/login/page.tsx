@@ -68,9 +68,9 @@ function LoginForm() {
             <Image
               src="/images/LogoLargo.PNG"
               alt="S&B Solutions"
-              width={260}
-              height={80}
-              className="h-20 w-auto object-contain mx-auto mb-4"
+              width={380}
+              height={120}
+              className="h-32 w-auto object-contain mx-auto mb-4"
             />
             <h1 className="text-2xl font-black" style={{ color: "var(--color-text)" }}>
               Iniciar sesión

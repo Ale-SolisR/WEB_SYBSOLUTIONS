@@ -16,9 +16,9 @@ export default function Footer() {
             <Image
               src="/images/LogoLargo.PNG"
               alt="S&B Solutions"
-              width={240}
-              height={72}
-              className="h-16 w-auto object-contain mb-5"
+              width={360}
+              height={108}
+              className="h-24 w-auto object-contain mb-5"
             />
             <p className="text-sm leading-relaxed mb-6 max-w-xs" style={{ color: "var(--color-text-muted)" }}>
               Transformamos empresas con tecnología de punta. ERP, CRM, desarrollo web e infraestructura TI para impulsar tu crecimiento.

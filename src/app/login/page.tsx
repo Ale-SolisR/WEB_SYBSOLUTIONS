@@ -55,39 +55,39 @@ function LoginForm() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-sm"
       >
         {/* Back link */}
-        <Link href="/" className="inline-flex items-center gap-2 text-sm mb-8 hover:opacity-70 transition-opacity" style={{ color: "var(--color-text-muted)" }}>
-          <ArrowLeft size={16} /> Volver al inicio
+        <Link href="/" className="inline-flex items-center gap-1.5 text-xs mb-5 hover:opacity-70 transition-opacity" style={{ color: "var(--color-text-muted)" }}>
+          <ArrowLeft size={14} /> Volver al inicio
         </Link>
 
-        <div className="card p-8 md:p-10">
+        <div className="card p-6">
           {/* Logo */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <Image
               src="/images/LogoLargo.PNG"
               alt="S&B Solutions"
-              width={380}
-              height={120}
-              className="h-32 w-auto object-contain mx-auto mb-4"
+              width={180}
+              height={55}
+              className="h-12 w-auto object-contain mx-auto mb-3"
             />
-            <h1 className="text-2xl font-black" style={{ color: "var(--color-text)" }}>
+            <h1 className="text-lg font-bold" style={{ color: "var(--color-text)" }}>
               Iniciar sesión
             </h1>
-            <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>
+            <p className="text-xs mt-0.5" style={{ color: "var(--color-text-muted)" }}>
               Accede al portal de capacitaciones
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--color-text)" }}>
+              <label className="block text-xs font-medium mb-1" style={{ color: "var(--color-text)" }}>
                 Correo electrónico
               </label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--color-text-muted)" }} />
+                <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--color-text-muted)" }} />
                 <input
                   type="email"
                   value={email}
@@ -95,18 +95,18 @@ function LoginForm() {
                   required
                   autoComplete="email"
                   placeholder="tu@empresa.com"
-                  className="input-field pl-10"
+                  className="input-field pl-9 text-sm py-2"
                 />
               </div>
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--color-text)" }}>
+              <label className="block text-xs font-medium mb-1" style={{ color: "var(--color-text)" }}>
                 Contraseña
               </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--color-text-muted)" }} />
+                <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--color-text-muted)" }} />
                 <input
                   type={showPw ? "text" : "password"}
                   value={password}
@@ -114,7 +114,7 @@ function LoginForm() {
                   required
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className="input-field pl-10 pr-10"
+                  className="input-field pl-9 pr-9 text-sm py-2"
                 />
                 <button
                   type="button"
@@ -122,7 +122,7 @@ function LoginForm() {
                   className="absolute right-3 top-1/2 -translate-y-1/2"
                   style={{ color: "var(--color-text-muted)" }}
                 >
-                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
               </div>
             </div>
@@ -130,17 +130,17 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full justify-center mt-2"
+              className="btn-primary w-full justify-center mt-1 text-sm py-2"
             >
-              {loading ? <Loader2 size={18} className="animate-spin" /> : <Lock size={16} />}
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <Lock size={14} />}
               {loading ? "Verificando..." : "Ingresar"}
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t text-center text-xs" style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}>
-            ¿Problemas para ingresar? Contacta al administrador en{" "}
+          <div className="mt-4 pt-4 border-t text-center text-xs" style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}>
+            ¿Problemas para ingresar?{" "}
             <a href="mailto:sybsolutionscr@gmail.com" className="hover:opacity-80" style={{ color: "var(--color-primary)" }}>
-              sybsolutionscr@gmail.com
+              Contacta al administrador
             </a>
           </div>
         </div>

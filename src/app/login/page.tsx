@@ -33,7 +33,7 @@ function LoginForm() {
         toast.error("Credenciales incorrectas. Verifica tu email y contraseña.");
       } else {
         toast.success("¡Bienvenido!");
-        router.push(callbackUrl);
+        window.location.href = callbackUrl;
       }
     } finally {
       setLoading(false);

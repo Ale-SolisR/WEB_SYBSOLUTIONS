@@ -35,13 +35,13 @@ function CalendarPicker({ selected, onSelect }: { selected: string; onSelect: (d
   return (
     <div className="rounded-lg overflow-hidden border" style={{ borderColor: "var(--color-border)" }}>
       <div className="flex items-center justify-between px-3 py-2" style={{ background: "var(--color-surface-2)" }}>
-        <button onClick={prevMonth} className="p-1 rounded hover:opacity-70 transition-opacity">
+        <button type="button" onClick={prevMonth} className="p-1 rounded hover:opacity-70 transition-opacity">
           <ChevronLeft size={14} style={{ color: "var(--color-text)" }} />
         </button>
         <p className="font-semibold text-xs" style={{ color: "var(--color-text)" }}>
           {MONTHS[viewDate.getMonth()]} {viewDate.getFullYear()}
         </p>
-        <button onClick={nextMonth} className="p-1 rounded hover:opacity-70 transition-opacity">
+        <button type="button" onClick={nextMonth} className="p-1 rounded hover:opacity-70 transition-opacity">
           <ChevronRight size={14} style={{ color: "var(--color-text)" }} />
         </button>
       </div>

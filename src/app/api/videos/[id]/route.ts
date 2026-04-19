@@ -19,16 +19,32 @@ export async function PUT(req: NextRequest, { params }: Params) {
     const { Titulo, Descripcion, YoutubeUrl, Categoria, Activo, Orden } = body;
     const YoutubeId = extractYoutubeId(YoutubeUrl);
     const pool = await getPool();
+    const ordenVal = Number(Orden) || 1;
+    const numId = Number(id);
+
+    // Get current orden to detect change
+    const current = await pool.request()
+      .input("Id", sql.Int, numId)
+      .query("SELECT Orden FROM web.VIDEOS WHERE Id=@Id");
+    const oldOrden = current.recordset[0]?.Orden;
+
+    // If order changed, shift others to make room
+    if (oldOrden !== ordenVal) {
+      await pool.request()
+        .input("Orden", sql.Int, ordenVal)
+        .input("Id", sql.Int, numId)
+        .query("UPDATE web.VIDEOS SET Orden = Orden + 1 WHERE Orden >= @Orden AND Id <> @Id");
+    }
 
     await pool.request()
-      .input("Id", sql.Int, Number(id))
+      .input("Id", sql.Int, numId)
       .input("Titulo", sql.NVarChar, Titulo)
       .input("Descripcion", sql.NVarChar, Descripcion || "")
       .input("YoutubeUrl", sql.NVarChar, YoutubeUrl)
       .input("YoutubeId", sql.NVarChar, YoutubeId)
       .input("Categoria", sql.NVarChar, Categoria || "General")
       .input("Activo", sql.Bit, Activo ? 1 : 0)
-      .input("Orden", sql.Int, Orden || 0)
+      .input("Orden", sql.Int, ordenVal)
       .query(`
         UPDATE web.VIDEOS
         SET Titulo=@Titulo, Descripcion=@Descripcion, YoutubeUrl=@YoutubeUrl,

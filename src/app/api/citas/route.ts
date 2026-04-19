@@ -35,17 +35,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Fecha y hora requeridas" }, { status: 400 });
     }
 
-    // Validate Mon–Fri
-    const citaDate = new Date(FechaCita + "T12:00:00");
-    const dayOfWeek = citaDate.getDay();
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      return NextResponse.json({ error: "Solo se permiten citas de lunes a viernes" }, { status: 400 });
-    }
+    // Admin can bypass day/time restrictions
+    const adminSession = await getServerSession(authOptions);
+    const isAdmin = (adminSession?.user as any)?.role === "admin";
+    const adminCreate = body.adminCreate === true;
 
-    // Validate 8am–4pm slot
-    const [h] = HoraCita.split(":").map(Number);
-    if (h < 8 || h >= 16) {
-      return NextResponse.json({ error: "Horario solo entre 8:00 y 16:00" }, { status: 400 });
+    if (!isAdmin || !adminCreate) {
+      // Validate Mon–Fri
+      const citaDate = new Date(FechaCita + "T12:00:00");
+      const dayOfWeek = citaDate.getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        return NextResponse.json({ error: "Solo se permiten citas de lunes a viernes" }, { status: 400 });
+      }
+
+      // Validate 8am–4pm slot
+      const [h] = HoraCita.split(":").map(Number);
+      if (h < 8 || h >= 16) {
+        return NextResponse.json({ error: "Horario solo entre 8:00 y 16:00" }, { status: 400 });
+      }
     }
 
     // Check slot availability

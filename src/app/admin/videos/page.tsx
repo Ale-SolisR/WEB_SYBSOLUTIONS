@@ -176,14 +176,14 @@ export default function AdminVideos() {
                       <input {...register("YoutubeUrl", { required: "Requerido" })} className="input-field text-sm" placeholder="https://youtu.be/..." />
                       {errors.YoutubeUrl && <p className="text-xs text-red-500 mt-1">{errors.YoutubeUrl.message}</p>}
                     </div>
-                    <div className="w-28 h-16 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center"
+                    <div className="w-16 h-10 rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center"
                       style={{ background: "var(--color-surface-2)", border: "1px dashed var(--color-border)" }}>
                       {thumbId ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img src={getYoutubeThumbnail(thumbId)} alt="Miniatura" className="w-full h-full object-cover"
                           onError={(e) => { (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${thumbId}/hqdefault.jpg`; }} />
                       ) : (
-                        <p className="text-xs text-center px-1" style={{ color: "var(--color-text-muted)" }}>Preview</p>
+                        <p className="text-xs text-center" style={{ color: "var(--color-text-muted)", fontSize: "9px" }}>▶</p>
                       )}
                     </div>
                   </div>
@@ -206,7 +206,19 @@ export default function AdminVideos() {
                   </div>
                   <div>
                     <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Orden</label>
-                    <input {...register("Orden", { valueAsNumber: true })} type="number" className="input-field text-sm" />
+                    <input
+                      {...register("Orden", {
+                        valueAsNumber: true,
+                        min: { value: 1, message: "Mínimo 1" },
+                        max: { value: editingId ? videos.length : videos.length + 1, message: `Máximo ${editingId ? videos.length : videos.length + 1}` },
+                      })}
+                      type="number"
+                      min={1}
+                      max={editingId ? videos.length : videos.length + 1}
+                      step={1}
+                      className="input-field text-sm"
+                    />
+                    {errors.Orden && <p className="text-xs text-red-500 mt-1">{errors.Orden.message}</p>}
                   </div>
                 </div>
                 {editingId && (

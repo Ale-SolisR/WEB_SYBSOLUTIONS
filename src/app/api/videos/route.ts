@@ -33,13 +33,19 @@ export async function POST(req: NextRequest) {
     const YoutubeId = extractYoutubeId(YoutubeUrl);
 
     const pool = await getPool();
+    const ordenVal = Number(Orden) || 1;
+    // Shift existing videos with same or higher order
+    await pool.request()
+      .input("Orden", sql.Int, ordenVal)
+      .query("UPDATE web.VIDEOS SET Orden = Orden + 1 WHERE Orden >= @Orden");
+
     await pool.request()
       .input("Titulo", sql.NVarChar, Titulo)
       .input("Descripcion", sql.NVarChar, Descripcion || "")
       .input("YoutubeUrl", sql.NVarChar, YoutubeUrl)
       .input("YoutubeId", sql.NVarChar, YoutubeId)
       .input("Categoria", sql.NVarChar, Categoria || "General")
-      .input("Orden", sql.Int, Orden || 0)
+      .input("Orden", sql.Int, ordenVal)
       .query(`
         INSERT INTO web.VIDEOS (Titulo, Descripcion, YoutubeUrl, YoutubeId, Categoria, Orden)
         VALUES (@Titulo, @Descripcion, @YoutubeUrl, @YoutubeId, @Categoria, @Orden)

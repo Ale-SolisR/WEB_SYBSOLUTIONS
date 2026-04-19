@@ -44,6 +44,10 @@ export default function Contact() {
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } =
     useForm<ContactForm>();
 
+  const onInvalid = () => {
+    toast.error("Por favor ingrese un correo electrónico válido.");
+  };
+
   const onSubmit = async (data: ContactForm) => {
     const msg = encodeURIComponent(
       `Hola SYB Solutions!\n\nNombre: ${data.nombre}\nEmpresa: ${data.empresa}\nEmail: ${data.email}\n\nMensaje:\n${data.mensaje}`
@@ -181,7 +185,7 @@ export default function Contact() {
               <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>Te contactaremos muy pronto.</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold mb-1" style={{ color: "var(--color-text-muted)" }}>
@@ -214,15 +218,19 @@ export default function Contact() {
                 </label>
                 <input
                   {...register("email", {
-                    required: "Requerido",
-                    pattern: { value: /^\S+@\S+$/i, message: "Email inválido" },
+                    required: "El correo es obligatorio",
+                    pattern: {
+                      value: /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/,
+                      message: "Ingrese un correo electrónico válido",
+                    },
                   })}
                   className="input-field text-sm py-2"
                   placeholder="tu@empresa.com"
                   type="email"
+                  style={errors.email ? { borderColor: "#ef4444", boxShadow: "0 0 0 3px #ef444420" } : {}}
                 />
                 {errors.email && (
-                  <p className="text-xs mt-1 text-red-500">{errors.email.message}</p>
+                  <p className="text-xs mt-1 font-medium text-red-500">{errors.email.message}</p>
                 )}
               </div>
 

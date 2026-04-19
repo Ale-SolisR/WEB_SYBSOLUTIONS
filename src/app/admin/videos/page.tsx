@@ -6,7 +6,7 @@ import { Plus, Edit2, Trash2, Eye, EyeOff, X, Save, Loader2, Search } from "luci
 import toast from "react-hot-toast";
 import Image from "next/image";
 import type { Video } from "@/types";
-import { getYoutubeThumbnail } from "@/lib/youtube";
+import { getYoutubeThumbnail, extractYoutubeId } from "@/lib/youtube";
 import { motion, AnimatePresence } from "framer-motion";
 
 const MODULES = ["Todos","POS","Inventario","Ventas","Tesorería","Compras","Cuentas por Cobrar","Cuentas por Pagar","Contabilidad","Reportes","Vendedores"];
@@ -28,10 +28,20 @@ export default function AdminVideos() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
   const [moduleFilter, setModuleFilter] = useState("Todos");
+  const [thumbId, setThumbId] = useState("");
 
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<VideoForm>({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<VideoForm>({
     defaultValues: { Activo: true, Orden: 0, Categoria: "Inventario" },
   });
+
+  const youtubeUrlValue = watch("YoutubeUrl");
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const id = extractYoutubeId(youtubeUrlValue || "");
+      setThumbId(id.length === 11 ? id : "");
+    }, 600);
+    return () => clearTimeout(t);
+  }, [youtubeUrlValue]);
 
   const fetchVideos = () =>
     fetch("/api/videos").then((r) => r.json()).then(setVideos).catch(() => {}).finally(() => setLoading(false));
@@ -40,6 +50,7 @@ export default function AdminVideos() {
 
   const openNew = () => {
     reset({ Titulo: "", Descripcion: "", YoutubeUrl: "", Categoria: "Inventario", Orden: videos.length + 1, Activo: true });
+    setThumbId("");
     setEditingId(null);
     setShowForm(true);
   };
@@ -51,6 +62,7 @@ export default function AdminVideos() {
     setValue("Categoria", v.Categoria);
     setValue("Orden", v.Orden);
     setValue("Activo", v.Activo);
+    setThumbId(v.YoutubeId || "");
     setEditingId(v.Id);
     setShowForm(true);
   };
@@ -161,6 +173,22 @@ export default function AdminVideos() {
                   <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>URL de YouTube *</label>
                   <input {...register("YoutubeUrl", { required: "Requerido" })} className="input-field text-sm" placeholder="https://youtu.be/..." />
                   {errors.YoutubeUrl && <p className="text-xs text-red-500 mt-1">{errors.YoutubeUrl.message}</p>}
+                  <div className="mt-2 rounded-xl overflow-hidden relative aspect-video"
+                    style={{ background: "var(--color-surface-2)", border: "1px dashed var(--color-border)" }}>
+                    {thumbId ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={getYoutubeThumbnail(thumbId)}
+                        alt="Miniatura"
+                        className="w-full h-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${thumbId}/hqdefault.jpg`; }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>Vista previa de miniatura</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Título *</label>

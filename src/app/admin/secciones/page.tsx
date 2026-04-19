@@ -2,9 +2,39 @@
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Plus, Edit2, Trash2, X, Save, Loader2, Globe, Users, LayoutTemplate } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Save, Loader2, Globe, Users, LayoutTemplate, ImageOff } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+
+function ImagePreview({ url }: { url: string }) {
+  const [error, setError] = useState(false);
+  const [imgLoading, setImgLoading] = useState(true);
+  useEffect(() => { setError(false); setImgLoading(true); }, [url]);
+
+  if (!url.trim()) return (
+    <div className="flex items-center justify-center h-14 rounded-lg"
+      style={{ background: "var(--color-surface-2)", border: "1px dashed var(--color-border)" }}>
+      <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>Vista previa</p>
+    </div>
+  );
+  return (
+    <div className="relative flex items-center justify-center h-14 rounded-lg overflow-hidden"
+      style={{ background: "var(--color-surface-2)", border: "1px solid var(--color-border)" }}>
+      {imgLoading && <Loader2 size={14} className="animate-spin absolute" style={{ color: "var(--color-primary)" }} />}
+      {error ? (
+        <div className="flex flex-col items-center gap-1">
+          <ImageOff size={14} style={{ color: "var(--color-text-muted)" }} />
+          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>URL inválida</p>
+        </div>
+      ) : (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img src={url} alt="Preview" className="max-h-12 max-w-full object-contain rounded"
+          style={{ display: imgLoading ? "none" : "block" }}
+          onLoad={() => setImgLoading(false)} onError={() => { setError(true); setImgLoading(false); }} />
+      )}
+    </div>
+  );
+}
 
 const ICON_OPTIONS = [
   "Globe","Server","Network","Cpu","GraduationCap","Headphones",
@@ -176,10 +206,17 @@ function EquipoTab() {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
 
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<MiembroForm>({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<MiembroForm>({
     defaultValues: { Activo: true, Orden: 0 },
   });
+
+  const fotoUrlValue = watch("FotoUrl");
+  useEffect(() => {
+    const t = setTimeout(() => setPreviewUrl(fotoUrlValue || ""), 600);
+    return () => clearTimeout(t);
+  }, [fotoUrlValue]);
 
   const fetch_ = () =>
     fetch("/api/equipo").then(r => r.json()).then(setItems).catch(() => {}).finally(() => setLoading(false));
@@ -188,11 +225,13 @@ function EquipoTab() {
 
   const openNew = () => {
     reset({ Nombre: "", Cargo: "", Descripcion: "", FotoUrl: "", LinkedIn: "", Activo: true, Orden: items.length });
+    setPreviewUrl("");
     setEditId(null); setShowForm(true);
   };
 
   const openEdit = (m: Miembro) => {
     Object.entries(m).forEach(([k, v]) => setValue(k as keyof MiembroForm, v as any));
+    setPreviewUrl(m.FotoUrl || "");
     setEditId(m.Id); setShowForm(true);
   };
 
@@ -227,52 +266,59 @@ function EquipoTab() {
             <motion.div
               initial={{ opacity: 0, scale: 0.97, y: 6 }} animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.97, y: 6 }} transition={{ duration: 0.15 }}
-              className="w-full max-w-lg rounded-2xl shadow-2xl border max-h-[90vh] overflow-y-auto"
+              className="w-full max-w-md rounded-2xl shadow-2xl border max-h-[90vh] overflow-y-auto"
               style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
             >
-              <div className="flex items-center justify-between px-6 py-4 border-b sticky top-0" style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}>
-                <h3 className="text-base font-semibold" style={{ color: "var(--color-text)" }}>{editId ? "Editar" : "Nuevo"} miembro</h3>
-                <button onClick={() => setShowForm(false)} className="p-1 rounded-lg hover:opacity-70" style={{ color: "var(--color-text-muted)" }}><X size={16} /></button>
+              <div className="flex items-center justify-between px-5 py-3.5 border-b sticky top-0" style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+                <h3 className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>{editId ? "Editar" : "Nuevo"} miembro</h3>
+                <button onClick={() => setShowForm(false)} className="p-1 rounded-lg hover:opacity-70" style={{ color: "var(--color-text-muted)" }}><X size={15} /></button>
               </div>
-              <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-5 space-y-4">
-                <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Nombre completo *</label>
-                  <input {...register("Nombre", { required: "Requerido" })} className="input-field text-sm" placeholder="Nombre" />
-                  {errors.Nombre && <p className="text-xs text-red-500 mt-1">{errors.Nombre.message}</p>}
+              <form onSubmit={handleSubmit(onSubmit)} className="px-5 py-4 space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--color-text-muted)" }}>Nombre *</label>
+                    <input {...register("Nombre", { required: "Requerido" })} className="input-field text-sm py-2" placeholder="Nombre completo" />
+                    {errors.Nombre && <p className="text-xs text-red-500 mt-0.5">{errors.Nombre.message}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--color-text-muted)" }}>Cargo *</label>
+                    <input {...register("Cargo", { required: "Requerido" })} className="input-field text-sm py-2" placeholder="Desarrollador" />
+                    {errors.Cargo && <p className="text-xs text-red-500 mt-0.5">{errors.Cargo.message}</p>}
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Cargo / Rol *</label>
-                  <input {...register("Cargo", { required: "Requerido" })} className="input-field text-sm" placeholder="Co-Fundador · Developer" />
-                  {errors.Cargo && <p className="text-xs text-red-500 mt-1">{errors.Cargo.message}</p>}
+                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--color-text-muted)" }}>Descripción</label>
+                  <textarea {...register("Descripcion")} className="input-field resize-none text-sm" rows={2} />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Descripción</label>
-                  <textarea {...register("Descripcion")} className="input-field resize-none text-sm" rows={3} />
+                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--color-text-muted)" }}>URL de foto</label>
+                  <input {...register("FotoUrl", { validate: v => !v || (() => { try { new URL(v); return true; } catch { return "URL inválida"; } })() })} className="input-field text-sm py-2" placeholder="https://..." />
+                  {errors.FotoUrl && <p className="text-xs text-red-500 mt-0.5">{errors.FotoUrl.message as string}</p>}
+                  <div className="mt-1.5">
+                    <ImagePreview url={previewUrl} />
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>URL de foto</label>
-                  <input {...register("FotoUrl", { validate: v => !v || (() => { try { new URL(v); return true; } catch { return "URL inválida"; } })() })} className="input-field text-sm" placeholder="https://..." />
-                  {errors.FotoUrl && <p className="text-xs text-red-500 mt-1">{errors.FotoUrl.message as string}</p>}
+                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--color-text-muted)" }}>LinkedIn URL</label>
+                  <input {...register("LinkedIn")} className="input-field text-sm py-2" placeholder="https://linkedin.com/in/..." />
                 </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>LinkedIn URL</label>
-                  <input {...register("LinkedIn")} className="input-field text-sm" placeholder="https://linkedin.com/in/..." />
+                <div className="grid grid-cols-2 gap-3 items-end">
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--color-text-muted)" }}>Orden</label>
+                    <input {...register("Orden", { valueAsNumber: true, min: { value: 0, message: "No puede ser negativo" } })} type="number" min={0} className="input-field text-sm py-2" />
+                    {errors.Orden && <p className="text-xs text-red-500 mt-0.5">{errors.Orden.message}</p>}
+                  </div>
+                  {editId && (
+                    <label className="flex items-center gap-2 cursor-pointer pb-2">
+                      <input type="checkbox" {...register("Activo")} className="w-4 h-4 rounded" />
+                      <span className="text-sm" style={{ color: "var(--color-text)" }}>Activo</span>
+                    </label>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-muted)" }}>Orden</label>
-                  <input {...register("Orden", { valueAsNumber: true, min: { value: 0, message: "No puede ser negativo" } })} type="number" min={0} className="input-field text-sm" />
-                  {errors.Orden && <p className="text-xs text-red-500 mt-1">{errors.Orden.message}</p>}
-                </div>
-                {editId && (
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" {...register("Activo")} className="w-4 h-4 rounded" />
-                    <span className="text-sm" style={{ color: "var(--color-text)" }}>Activo</span>
-                  </label>
-                )}
                 <div className="flex gap-3 justify-end pt-1">
-                  <button type="button" onClick={() => setShowForm(false)} className="btn-outline py-2 px-4 text-sm">Cancelar</button>
-                  <button type="submit" disabled={saving} className="btn-primary py-2 px-4 text-sm">
-                    {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                  <button type="button" onClick={() => setShowForm(false)} className="btn-outline py-1.5 px-4 text-sm">Cancelar</button>
+                  <button type="submit" disabled={saving} className="btn-primary py-1.5 px-4 text-sm">
+                    {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                     {saving ? "Guardando..." : "Guardar"}
                   </button>
                 </div>

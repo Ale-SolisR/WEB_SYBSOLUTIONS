@@ -40,15 +40,15 @@ export default function Navbar() {
         boxShadow: scrolled ? "0 4px 24px rgba(0,0,0,0.08)" : "none",
       }}
     >
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-3">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-2">
         {/* Logo */}
         <Link href="/" className="flex items-center group flex-shrink-0">
           <Image
             src="/images/LogoLargo.PNG"
             alt="S&B Solutions"
-            width={360}
-            height={110}
-            className="h-24 w-auto object-contain transition-transform group-hover:scale-105"
+            width={220}
+            height={60}
+            className="h-14 w-auto object-contain transition-transform group-hover:scale-105"
             priority
           />
         </Link>

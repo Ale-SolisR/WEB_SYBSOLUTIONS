@@ -81,20 +81,20 @@ function LoginForm() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
-            {/* Email */}
+            {/* Username / Email */}
             <div>
               <label className="block text-xs font-medium mb-1" style={{ color: "var(--color-text)" }}>
-                Correo electrónico
+                Usuario o correo
               </label>
               <div className="relative">
                 <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--color-text-muted)" }} />
                 <input
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  autoComplete="email"
-                  placeholder="tu@empresa.com"
+                  autoComplete="username"
+                  placeholder="usuario o correo"
                   className="input-field pl-9 text-sm py-2"
                 />
               </div>

@@ -39,7 +39,7 @@ export default function AdminVideos() {
   useEffect(() => { fetchVideos(); }, []);
 
   const openNew = () => {
-    reset({ Titulo: "", Descripcion: "", YoutubeUrl: "", Categoria: "ERP", Orden: videos.length + 1, Activo: true });
+    reset({ Titulo: "", Descripcion: "", YoutubeUrl: "", Categoria: "Inventario", Orden: videos.length + 1, Activo: true });
     setEditingId(null);
     setShowForm(true);
   };
@@ -137,8 +137,19 @@ export default function AdminVideos() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>Categoría</label>
-                    <input {...register("Categoria")} className="input-field" placeholder="ERP, CRM, etc." />
+                    <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>Módulo</label>
+                    <select {...register("Categoria")} className="input-field">
+                      <option value="POS">POS</option>
+                      <option value="Inventario">Inventario</option>
+                      <option value="Ventas">Ventas</option>
+                      <option value="Tesorería">Tesorería</option>
+                      <option value="Compras">Compras</option>
+                      <option value="Cuentas por Cobrar">Cuentas por Cobrar</option>
+                      <option value="Cuentas por Pagar">Cuentas por Pagar</option>
+                      <option value="Contabilidad">Contabilidad</option>
+                      <option value="Reportes">Reportes</option>
+                      <option value="Vendedores">Vendedores</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>Orden</label>

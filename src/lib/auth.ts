@@ -8,18 +8,18 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        email: { label: "Usuario", type: "text" },
         password: { label: "Contraseña", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const email = credentials.email.toLowerCase().trim();
+        const email = credentials.email.trim();
         const password = credentials.password;
 
         // Check admin credentials first (stored securely in env vars)
         const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
-        if (email === adminEmail) {
+        if (email.toLowerCase() === adminEmail) {
           const adminPw = process.env.ADMIN_PASSWORD;
           const adminHash = process.env.ADMIN_PASSWORD_HASH;
           let isValid = false;

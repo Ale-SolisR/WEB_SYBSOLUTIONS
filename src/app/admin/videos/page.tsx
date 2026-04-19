@@ -252,10 +252,15 @@ export default function AdminVideos() {
           </p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="flex flex-col gap-1.5">
           {filtered.map((v) => (
-            <motion.div key={v.Id} layout className="card overflow-hidden" style={{ opacity: v.Activo ? 1 : 0.55 }}>
-              <div className="relative aspect-video bg-black">
+            <motion.div
+              key={v.Id} layout
+              className="flex items-center gap-3 px-3 py-2 rounded-xl border"
+              style={{ background: "var(--color-surface)", borderColor: "var(--color-border)", opacity: v.Activo ? 1 : 0.55 }}
+            >
+              {/* Thumbnail */}
+              <div className="relative w-20 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black">
                 <Image
                   src={getYoutubeThumbnail(v.YoutubeId)}
                   alt={v.Titulo}
@@ -264,42 +269,44 @@ export default function AdminVideos() {
                   onError={(e) => { (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${v.YoutubeId}/hqdefault.jpg`; }}
                 />
                 {!v.Activo && (
-                  <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
-                    <span className="text-white text-xs font-semibold px-2.5 py-0.5 rounded-full bg-black/60">Oculto</span>
+                  <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.55)" }}>
+                    <EyeOff size={10} className="text-white" />
                   </div>
                 )}
-                <span className="absolute top-2 left-2 text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "rgba(0,0,0,0.65)", color: "#fff" }}>
-                  {v.Categoria}
-                </span>
               </div>
-              <div className="p-4">
-                <p className="font-medium text-sm line-clamp-1 mb-0.5" style={{ color: "var(--color-text)" }}>{v.Titulo}</p>
-                <p className="text-xs mb-3" style={{ color: "var(--color-text-muted)" }}>Orden #{v.Orden}</p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => openEdit(v)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium border hover:opacity-80 transition-opacity"
-                    style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}
-                  >
-                    <Edit2 size={12} /> Editar
-                  </button>
-                  <button
-                    onClick={() => toggleActive(v)}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg border hover:opacity-70 transition-opacity"
-                    style={{ borderColor: "var(--color-border)", color: v.Activo ? "#f59e0b" : "#22c55e" }}
-                    title={v.Activo ? "Ocultar" : "Mostrar"}
-                  >
-                    {v.Activo ? <EyeOff size={13} /> : <Eye size={13} />}
-                  </button>
-                  <button
-                    onClick={() => deleteVideo(v.Id)}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg border hover:opacity-70 transition-opacity"
-                    style={{ borderColor: "#fee2e2", color: "#ef4444" }}
-                    title="Eliminar"
-                  >
-                    <Trash2 size={13} />
-                  </button>
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium line-clamp-1" style={{ color: "var(--color-text)" }}>{v.Titulo}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs px-1.5 py-0.5 rounded-full font-medium" style={{ background: "var(--color-surface-2)", color: "var(--color-text-muted)" }}>{v.Categoria}</span>
+                  <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>#{v.Orden}</span>
                 </div>
+              </div>
+              {/* Actions */}
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <button
+                  onClick={() => openEdit(v)}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border hover:opacity-80 transition-opacity"
+                  style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}
+                >
+                  <Edit2 size={11} /> Editar
+                </button>
+                <button
+                  onClick={() => toggleActive(v)}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg border hover:opacity-70 transition-opacity"
+                  style={{ borderColor: "var(--color-border)", color: v.Activo ? "#f59e0b" : "#22c55e" }}
+                  title={v.Activo ? "Ocultar" : "Mostrar"}
+                >
+                  {v.Activo ? <EyeOff size={12} /> : <Eye size={12} />}
+                </button>
+                <button
+                  onClick={() => deleteVideo(v.Id)}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg border hover:opacity-70 transition-opacity"
+                  style={{ borderColor: "#fee2e2", color: "#ef4444" }}
+                  title="Eliminar"
+                >
+                  <Trash2 size={12} />
+                </button>
               </div>
             </motion.div>
           ))}

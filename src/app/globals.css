@@ -212,18 +212,39 @@ body {
   border-radius: 4px;
 }
 
-/* ─── Christmas snowflake animation ─── */
-[data-theme="christmas"] .hero-bg::before {
-  content: "❄";
-  position: absolute;
-  animation: snow 10s linear infinite;
-  opacity: 0.3;
-  font-size: 2rem;
+/* ─── Holiday theme decoration animations ─── */
+@keyframes snowfall {
+  0%   { transform: translateY(-40px) translateX(0) rotate(0deg); opacity: 0; }
+  6%   { opacity: 1; }
+  90%  { opacity: 0.7; }
+  100% { transform: translateY(105vh) translateX(35px) rotate(400deg); opacity: 0; }
 }
-
-@keyframes snow {
-  0% { transform: translateY(-100px) rotate(0deg); opacity: 0; }
-  10% { opacity: 0.3; }
-  90% { opacity: 0.3; }
-  100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+@keyframes floatUp {
+  0%   { transform: translateY(0) translateX(0) scale(0.7); opacity: 0; }
+  8%   { opacity: 0.9; }
+  80%  { opacity: 0.7; }
+  100% { transform: translateY(-105vh) translateX(25px) scale(1); opacity: 0; }
+}
+@keyframes floatBounce {
+  0%, 100% { transform: translateY(0) rotate(-4deg) scale(1); }
+  50%       { transform: translateY(-18px) rotate(4deg) scale(1.06); }
+}
+@keyframes sway {
+  0%, 100% { transform: rotate(-10deg) translateX(0); }
+  50%       { transform: rotate(10deg) translateX(10px); }
+}
+@keyframes driftButterfly {
+  0%   { transform: translateX(0) translateY(0) scaleX(1); }
+  25%  { transform: translateX(22px) translateY(-12px) scaleX(-1); }
+  50%  { transform: translateX(44px) translateY(0) scaleX(1); }
+  75%  { transform: translateX(22px) translateY(12px) scaleX(-1); }
+  100% { transform: translateX(0) translateY(0) scaleX(1); }
+}
+@keyframes twinklePulse {
+  0%, 100% { opacity: 0.25; transform: scale(0.75); }
+  50%       { opacity: 1;    transform: scale(1.2); }
+}
+@keyframes christmasLights {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown, LogOut, User, Shield, BookOpen, ExternalLink } from "lucide-react";
 import ThemeSelector from "./ThemeSelector";
 
@@ -18,6 +19,8 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const { data: session } = useSession();
+  const pathname = usePathname();
+  const isLanding = pathname === "/";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -34,10 +37,10 @@ export default function Navbar() {
     <header
       className="fixed top-0 inset-x-0 z-50 transition-all duration-300"
       style={{
-        background: scrolled ? "var(--color-surface)" : "transparent",
-        borderBottom: scrolled ? "1px solid var(--color-border)" : "none",
-        backdropFilter: scrolled ? "blur(16px)" : "none",
-        boxShadow: scrolled ? "0 4px 24px rgba(0,0,0,0.08)" : "none",
+        background: (scrolled || !isLanding) ? "var(--color-surface)" : "transparent",
+        borderBottom: (scrolled || !isLanding) ? "1px solid var(--color-border)" : "none",
+        backdropFilter: (scrolled || !isLanding) ? "blur(16px)" : "none",
+        boxShadow: (scrolled || !isLanding) ? "0 4px 24px rgba(0,0,0,0.08)" : "none",
       }}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-2">
@@ -60,7 +63,7 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               className="navbar-link"
-              style={{ color: scrolled ? "var(--color-text)" : "rgba(255,255,255,0.9)" }}
+              style={{ color: (scrolled || !isLanding) ? "var(--color-text)" : "rgba(255,255,255,0.9)" }}
             >
               {link.label}
             </Link>

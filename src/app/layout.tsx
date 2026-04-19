@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import SessionProvider from "@/components/SessionProvider";
+import ThemeDecorations from "@/components/ThemeDecorations";
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
@@ -33,6 +34,7 @@ export default function RootLayout({
       <body>
         <SessionProvider>
           <ThemeProvider>
+            <ThemeDecorations />
             {children}
             <Toaster
               position="top-right"

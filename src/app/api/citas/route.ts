@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getPool, sql } from "@/lib/db";
+import { createCalendarEvent } from "@/lib/googleCalendar";
+import { sendCitaConfirmation } from "@/lib/mailer";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -24,7 +26,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       Cedula, TipoCedula, NombreCompleto, Email, Telefono,
-      FechaNac, FechaCita, HoraCita, Nota,
+      FechaCita, HoraCita, Nota,
     } = body;
 
     if (!Cedula?.trim() || !NombreCompleto?.trim() || !Email?.trim() || !Telefono?.trim()) {
@@ -34,28 +36,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Fecha y hora requeridas" }, { status: 400 });
     }
 
-    // Validate appointment day is Mon-Fri
+    // Validate Mon–Fri
     const citaDate = new Date(FechaCita + "T12:00:00");
     const dayOfWeek = citaDate.getDay();
     if (dayOfWeek === 0 || dayOfWeek === 6) {
       return NextResponse.json({ error: "Solo se permiten citas de lunes a viernes" }, { status: 400 });
     }
 
-    // Validate time slot 8am-4pm
+    // Validate 8am–4pm slot
     const [h] = HoraCita.split(":").map(Number);
     if (h < 8 || h >= 16) {
       return NextResponse.json({ error: "Horario solo entre 8:00 y 16:00" }, { status: 400 });
-    }
-
-    // Age validation for physical persons
-    if (TipoCedula === "fisica" && FechaNac) {
-      const born = new Date(FechaNac);
-      const today = new Date();
-      const age = today.getFullYear() - born.getFullYear() -
-        (today < new Date(today.getFullYear(), born.getMonth(), born.getDate()) ? 1 : 0);
-      if (age < 18) {
-        return NextResponse.json({ error: "La persona física debe ser mayor de 18 años" }, { status: 400 });
-      }
     }
 
     // Check slot availability
@@ -68,24 +59,63 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Este horario ya está reservado" }, { status: 409 });
     }
 
+    // Insert appointment (Estado defaults to 'pendiente')
     const result = await pool.request()
-      .input("Cedula", sql.NVarChar, Cedula.trim())
-      .input("TipoCedula", sql.NVarChar, TipoCedula || "fisica")
+      .input("Cedula",         sql.NVarChar, Cedula.trim())
+      .input("TipoCedula",     sql.NVarChar, TipoCedula || "fisica")
       .input("NombreCompleto", sql.NVarChar, NombreCompleto.trim())
-      .input("Email", sql.NVarChar, Email.trim())
-      .input("Telefono", sql.NVarChar, Telefono.trim())
-      .input("FechaNac", sql.Date, FechaNac || null)
-      .input("FechaCita", sql.Date, FechaCita)
-      .input("HoraCita", sql.NVarChar, HoraCita)
-      .input("Nota", sql.NVarChar, Nota || "")
+      .input("Email",          sql.NVarChar, Email.trim())
+      .input("Telefono",       sql.NVarChar, Telefono.trim())
+      .input("FechaCita",      sql.Date,     FechaCita)
+      .input("HoraCita",       sql.NVarChar, HoraCita)
+      .input("Nota",           sql.NVarChar, Nota || "")
       .query(`
         INSERT INTO web.CITAS
-          (Cedula, TipoCedula, NombreCompleto, Email, Telefono, FechaNac, FechaCita, HoraCita, Nota)
+          (Cedula, TipoCedula, NombreCompleto, Email, Telefono, FechaCita, HoraCita, Nota)
         OUTPUT INSERTED.Id
-        VALUES (@Cedula,@TipoCedula,@NombreCompleto,@Email,@Telefono,@FechaNac,@FechaCita,@HoraCita,@Nota)
+        VALUES (@Cedula,@TipoCedula,@NombreCompleto,@Email,@Telefono,@FechaCita,@HoraCita,@Nota)
       `);
 
     const newId = result.recordset[0].Id;
+
+    // --- Google Calendar event (non-blocking, best-effort) ---
+    let meetLink: string | null = null;
+    try {
+      const calResult = await createCalendarEvent({
+        summary: `Demo S&B ERP – ${NombreCompleto.trim()}`,
+        description:
+          `Solicitud de demo del S&B ERP\n\nCliente: ${NombreCompleto.trim()}\nCédula: ${Cedula.trim()}\nTeléfono: ${Telefono.trim()}\nNota: ${Nota || "—"}`,
+        date: FechaCita,
+        time: HoraCita,
+        attendeeEmail: Email.trim(),
+        attendeeName: NombreCompleto.trim(),
+      });
+
+      if (calResult.eventId || calResult.meetLink) {
+        meetLink = calResult.meetLink;
+        await pool.request()
+          .input("Id",            sql.Int,      newId)
+          .input("GoogleEventId", sql.NVarChar, calResult.eventId || "")
+          .input("MeetLink",      sql.NVarChar, calResult.meetLink || "")
+          .query("UPDATE web.CITAS SET GoogleEventId=@GoogleEventId, MeetLink=@MeetLink WHERE Id=@Id");
+      }
+    } catch (calErr) {
+      console.error("Calendar integration error:", calErr);
+    }
+
+    // --- Confirmation email (non-blocking, best-effort) ---
+    try {
+      await sendCitaConfirmation({
+        to:       Email.trim(),
+        nombre:   NombreCompleto.trim(),
+        fecha:    FechaCita,
+        hora:     HoraCita,
+        meetLink,
+      });
+    } catch (mailErr) {
+      console.error("Email error:", mailErr);
+    }
+
     return NextResponse.json({ success: true, id: newId }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Error al guardar" }, { status: 500 });

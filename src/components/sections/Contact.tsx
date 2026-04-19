@@ -103,8 +103,11 @@ export default function Contact() {
                 </div>
               </a>
 
-              <div
-                className="flex items-center gap-4 p-4 rounded-2xl"
+              <a
+                href="https://maps.app.goo.gl/yHKwWn2ctdU1m1GCA"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-4 p-4 rounded-2xl transition-all hover:scale-[1.02]"
                 style={{ background: "var(--color-surface-2)", border: "1px solid var(--color-border)" }}
               >
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "var(--color-accent)" }}>
@@ -112,17 +115,11 @@ export default function Contact() {
                 </div>
                 <div>
                   <p className="font-semibold text-sm" style={{ color: "var(--color-text)" }}>Ubicación</p>
-                  <a
-                    href="https://maps.app.goo.gl/yHKwWn2ctdU1m1GCA"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm hover:underline"
-                    style={{ color: "var(--color-text-muted)" }}
-                  >
+                  <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
                     {config.direccion || "San José, Costa Rica"}
-                  </a>
+                  </p>
                 </div>
-              </div>
+              </a>
             </div>
           </div>
         </motion.div>

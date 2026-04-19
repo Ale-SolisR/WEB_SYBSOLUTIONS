@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import type { Cliente } from "@/types";
 
 export default function Clients() {
@@ -58,15 +57,14 @@ export default function Clients() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.06 }}
-                className="card px-8 py-5 flex flex-col items-center gap-3 hover:scale-105 transition-transform cursor-default min-w-[140px]"
+                className="card px-10 py-6 flex flex-col items-center gap-4 hover:scale-105 transition-transform cursor-default min-w-[180px]"
               >
                 {client.LogoUrl ? (
-                  <Image
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
                     src={client.LogoUrl}
                     alt={client.Nombre}
-                    width={100}
-                    height={40}
-                    className="object-contain"
+                    className="w-40 h-16 object-contain"
                     style={{ filter: "var(--logo-filter, none)" }}
                   />
                 ) : (

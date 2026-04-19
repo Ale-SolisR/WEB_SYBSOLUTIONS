@@ -46,9 +46,9 @@ export default function Navbar() {
           <Image
             src="/images/LogoLargo.PNG"
             alt="S&B Solutions"
-            width={200}
-            height={60}
-            className="h-14 w-auto object-contain transition-transform group-hover:scale-105"
+            width={260}
+            height={80}
+            className="h-16 w-auto object-contain transition-transform group-hover:scale-105"
             priority
           />
         </Link>
@@ -56,7 +56,12 @@ export default function Navbar() {
         {/* Desktop Nav */}
         <div className="hidden lg:flex items-center gap-1">
           {NAV_LINKS.map((link) => (
-            <Link key={link.href} href={link.href} className="navbar-link">
+            <Link
+              key={link.href}
+              href={link.href}
+              className="navbar-link"
+              style={{ color: scrolled ? "var(--color-text)" : "rgba(255,255,255,0.9)" }}
+            >
               {link.label}
             </Link>
           ))}

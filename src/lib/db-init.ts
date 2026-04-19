@@ -128,20 +128,23 @@ export async function initDatabase(): Promise<void> {
     IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='web' AND TABLE_NAME='CITAS')
     BEGIN
       CREATE TABLE web.CITAS (
-        Id            INT IDENTITY(1,1) PRIMARY KEY,
-        Cedula        NVARCHAR(20)  NOT NULL,
-        TipoCedula    NVARCHAR(20)  NOT NULL DEFAULT 'fisica',
+        Id             INT IDENTITY(1,1) PRIMARY KEY,
+        Cedula         NVARCHAR(20)  NOT NULL,
+        TipoCedula     NVARCHAR(20)  NOT NULL DEFAULT 'fisica',
         NombreCompleto NVARCHAR(200) NOT NULL,
-        Email         NVARCHAR(200) NOT NULL,
-        Telefono      NVARCHAR(30)  NOT NULL,
-        FechaNac      DATE          NULL,
-        FechaCita     DATE          NOT NULL,
-        HoraCita      NVARCHAR(10)  NOT NULL,
-        Nota          NVARCHAR(500) DEFAULT '',
-        Estado        NVARCHAR(20)  DEFAULT 'pendiente',
-        GoogleEventId NVARCHAR(200) DEFAULT '',
-        CreadoEn      DATETIME DEFAULT GETDATE()
+        Email          NVARCHAR(200) NOT NULL,
+        Telefono       NVARCHAR(30)  NOT NULL,
+        FechaNac       DATE          NULL,
+        FechaCita      DATE          NOT NULL,
+        HoraCita       NVARCHAR(10)  NOT NULL,
+        Nota           NVARCHAR(500) DEFAULT '',
+        Estado         NVARCHAR(20)  DEFAULT 'pendiente',
+        GoogleEventId  NVARCHAR(200) DEFAULT '',
+        MeetLink       NVARCHAR(500) DEFAULT '',
+        CreadoEn       DATETIME DEFAULT GETDATE()
       )
     END
+    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='web' AND TABLE_NAME='CITAS' AND COLUMN_NAME='MeetLink')
+      ALTER TABLE web.CITAS ADD MeetLink NVARCHAR(500) DEFAULT ''
   `);
 }

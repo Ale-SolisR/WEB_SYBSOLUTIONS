@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Clock, User, Mail, Phone, FileText, CheckCircle, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
@@ -91,7 +91,6 @@ interface FormState {
   nombre: string;
   email: string;
   telefono: string;
-  fechaNac: string;
   nota: string;
 }
 
@@ -102,7 +101,6 @@ export default function Citas() {
     nombre: "",
     email: "",
     telefono: "",
-    fechaNac: "",
     nota: "",
   });
   const [selectedDate, setSelectedDate] = useState("");
@@ -112,6 +110,7 @@ export default function Citas() {
   const [lookingUp, setLookingUp] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const lastLookedUp = useRef("");
 
   const setField = (k: keyof FormState, v: string) =>
     setForm((p) => ({ ...p, [k]: v }));
@@ -133,22 +132,32 @@ export default function Citas() {
 
   useEffect(() => { if (selectedDate) fetchSlots(selectedDate); }, [selectedDate, fetchSlots]);
 
-  const lookupCedula = async () => {
-    const c = form.cedula.replace(/\D/g, "");
-    if (!c || form.tipoCedula !== "fisica" || c.length < 9) return;
+  const lookupCedula = useCallback(async (cedula: string) => {
+    if (cedula.length < 9) return;
     setLookingUp(true);
     try {
-      const res = await fetch(`/api/cedula/${c}`);
-      if (!res.ok) { toast.error("Cédula no encontrada"); return; }
+      const res = await fetch(`/api/cedula/${cedula}`);
+      if (!res.ok) return;
       const data = await res.json();
       const nombre = data.nombre || data.fullname || "";
-      if (nombre) { setField("nombre", nombre); toast.success("Nombre autocompletado"); }
+      if (nombre) { setField("nombre", nombre); }
     } catch {
-      toast.error("Error al consultar la cédula");
+      // silent — user can type name manually
     } finally {
       setLookingUp(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const c = form.cedula;
+    if (form.tipoCedula !== "fisica" || c.length < 9) return;
+    if (c === lastLookedUp.current) return;
+    const timer = setTimeout(() => {
+      lastLookedUp.current = c;
+      lookupCedula(c);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [form.cedula, form.tipoCedula, lookupCedula]);
 
   const validate = (): string | null => {
     if (!form.cedula.trim()) return "Cédula requerida";
@@ -157,14 +166,6 @@ export default function Citas() {
     if (!form.telefono.trim() || form.telefono.replace(/\D/g, "").length < 8) return "Teléfono inválido (mínimo 8 dígitos)";
     if (!selectedDate) return "Selecciona una fecha";
     if (!selectedSlot) return "Selecciona un horario";
-    if (form.tipoCedula === "fisica") {
-      if (!form.fechaNac) return "Fecha de nacimiento requerida para persona física";
-      const born = new Date(form.fechaNac);
-      const today = new Date();
-      const age = today.getFullYear() - born.getFullYear() -
-        (today < new Date(today.getFullYear(), born.getMonth(), born.getDate()) ? 1 : 0);
-      if (age < 18) return "Debes ser mayor de 18 años para agendar";
-    }
     return null;
   };
 
@@ -184,7 +185,6 @@ export default function Citas() {
           NombreCompleto: form.nombre.trim(),
           Email: form.email.trim(),
           Telefono: form.telefono.trim(),
-          FechaNac: form.fechaNac || null,
           FechaCita: selectedDate,
           HoraCita: selectedSlot,
           Nota: form.nota.trim(),
@@ -220,7 +220,7 @@ export default function Citas() {
             Nos pondremos en contacto contigo para confirmar la cita.
           </p>
           <button
-            onClick={() => { setSuccess(false); setForm({ tipoCedula:"fisica",cedula:"",nombre:"",email:"",telefono:"",fechaNac:"",nota:"" }); setSelectedDate(""); setSelectedSlot(""); }}
+            onClick={() => { setSuccess(false); setForm({ tipoCedula:"fisica",cedula:"",nombre:"",email:"",telefono:"",nota:"" }); setSelectedDate(""); setSelectedSlot(""); lastLookedUp.current = ""; }}
             className="btn-primary mt-6"
           >
             Agendar otra cita
@@ -280,31 +280,20 @@ export default function Citas() {
               <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>
                 Número de {form.tipoCedula === "fisica" ? "cédula" : "identificación"} *
               </label>
-              <div className="flex gap-2">
+              <div className="relative">
                 <input
                   value={form.cedula}
-                  onChange={(e) => setField("cedula", e.target.value.replace(/\D/g, ""))}
+                  onChange={(e) => { setField("cedula", e.target.value.replace(/\D/g, "")); setField("nombre", ""); lastLookedUp.current = ""; }}
                   placeholder="Ej: 123456789"
-                  className="input-field flex-1"
+                  className="input-field"
                   maxLength={12}
                 />
-                {form.tipoCedula === "fisica" && (
-                  <button
-                    type="button"
-                    onClick={lookupCedula}
-                    disabled={lookingUp || form.cedula.length < 9}
-                    className="px-3 rounded-xl text-xs font-medium border transition-opacity disabled:opacity-40"
-                    style={{ borderColor: "var(--color-primary)", color: "var(--color-primary)" }}
-                  >
-                    {lookingUp ? <Loader2 size={14} className="animate-spin" /> : "Buscar"}
-                  </button>
+                {lookingUp && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Loader2 size={16} className="animate-spin" style={{ color: "var(--color-primary)" }} />
+                  </div>
                 )}
               </div>
-              {form.tipoCedula === "fisica" && form.cedula.length >= 9 && (
-                <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>
-                  Toca "Buscar" para autocompletar el nombre
-                </p>
-              )}
             </div>
 
             {/* Nombre */}
@@ -315,8 +304,10 @@ export default function Citas() {
               <input
                 value={form.nombre}
                 onChange={(e) => setField("nombre", e.target.value)}
-                placeholder="Tu nombre o empresa"
+                placeholder={form.tipoCedula === "fisica" ? "Se autocompleta con la cédula" : "Nombre de la empresa"}
                 className="input-field"
+                readOnly={form.tipoCedula === "fisica" && !!form.nombre}
+                style={form.tipoCedula === "fisica" && form.nombre ? { background: "var(--color-surface-2)", cursor: "default" } : {}}
               />
             </div>
 
@@ -347,22 +338,6 @@ export default function Citas() {
                 className="input-field"
               />
             </div>
-
-            {/* Fecha de nacimiento (solo persona física) */}
-            {form.tipoCedula === "fisica" && (
-              <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>
-                  Fecha de nacimiento * <span className="font-normal text-xs" style={{ color: "var(--color-text-muted)" }}>(debe ser mayor de 18 años)</span>
-                </label>
-                <input
-                  type="date"
-                  value={form.fechaNac}
-                  onChange={(e) => setField("fechaNac", e.target.value)}
-                  max={new Date(new Date().setFullYear(new Date().getFullYear()-18)).toISOString().split("T")[0]}
-                  className="input-field"
-                />
-              </div>
-            )}
 
             {/* Nota */}
             <div>

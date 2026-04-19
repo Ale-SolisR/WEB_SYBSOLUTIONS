@@ -18,10 +18,8 @@ interface Miembro {
 const COLORS = ["var(--color-primary)", "#8b5cf6", "#06b6d4", "#10b981"];
 
 function MemberCard({ member, index }: { member: Miembro; index: number }) {
-  const [imgError, setImgError] = useState(false);
   const color = COLORS[index % COLORS.length];
   const initials = member.Nombre.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase();
-  const showImage = member.FotoUrl && !imgError;
 
   return (
     <motion.div
@@ -38,21 +36,22 @@ function MemberCard({ member, index }: { member: Miembro; index: number }) {
           className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 scale-110"
           style={{ background: `${color}22`, border: `2px solid ${color}` }}
         />
-        {showImage ? (
+        {/* Initials always rendered as base */}
+        <div
+          className="w-24 h-24 rounded-full flex items-center justify-center text-2xl font-black text-white shadow-xl relative z-10"
+          style={{ background: `linear-gradient(135deg, ${color}, ${color}99)` }}
+        >
+          {initials}
+        </div>
+        {/* Image overlays on top; hidden via inline style if it fails to load */}
+        {member.FotoUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={member.FotoUrl}
             alt={member.Nombre}
-            onError={() => setImgError(true)}
-            className="w-24 h-24 rounded-full object-cover shadow-xl relative z-10"
+            onError={(e) => { e.currentTarget.style.display = "none"; }}
+            className="absolute inset-0 w-24 h-24 rounded-full object-cover shadow-xl z-20"
           />
-        ) : (
-          <div
-            className="w-24 h-24 rounded-full flex items-center justify-center text-2xl font-black text-white shadow-xl relative z-10"
-            style={{ background: `linear-gradient(135deg, ${color}, ${color}99)` }}
-          >
-            {initials}
-          </div>
         )}
       </div>
 

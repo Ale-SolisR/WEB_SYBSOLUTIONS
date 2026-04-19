@@ -19,7 +19,12 @@ export default function Clients() {
 
   if (!loading && clients.length === 0) return null;
 
-  const items = clients.length > 0 ? [...clients, ...clients, ...clients] : [];
+  // Repeat enough times so the track always fills the viewport, then duplicate for seamless loop
+  const minRepeat = Math.max(1, Math.ceil(10 / (clients.length || 1)));
+  const baseItems = clients.length > 0
+    ? Array.from({ length: minRepeat }, () => clients).flat()
+    : [];
+  const items = [...baseItems, ...baseItems];
 
   return (
     <section id="clientes" className="py-16 scroll-mt-24" style={{ background: "var(--color-surface-2)" }}>

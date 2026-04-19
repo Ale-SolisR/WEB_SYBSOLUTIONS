@@ -119,7 +119,7 @@ export default function Footer() {
                       style={{ background: "color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
                       <MapPin size={13} style={{ color: "var(--color-primary)" }} />
                     </span>
-                    San José, Costa Rica 🇨🇷
+                    San Ramón, Alajuela, Costa Rica 🇨🇷
                   </a>
                 </li>
               </ul>

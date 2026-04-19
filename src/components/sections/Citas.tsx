@@ -199,7 +199,7 @@ export default function Citas() {
 
   if (success) {
     return (
-      <section id="citas" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section id="citas" className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -228,7 +228,7 @@ export default function Citas() {
   }
 
   return (
-    <section id="citas" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <section id="citas" className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}

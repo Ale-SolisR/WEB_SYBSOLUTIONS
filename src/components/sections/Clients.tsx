@@ -27,7 +27,7 @@ export default function Clients() {
   const items = [...baseItems, ...baseItems];
 
   return (
-    <section id="clientes" className="py-16 scroll-mt-24" style={{ background: "var(--color-surface-2)" }}>
+    <section id="clientes" className="py-16 scroll-mt-20" style={{ background: "var(--color-surface-2)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

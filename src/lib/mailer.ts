@@ -92,6 +92,33 @@ function detallesCard(fechaLarga: string, hora: string, estadoBadge: string) {
   </div>`;
 }
 
+export async function sendLoginHelp({
+  correo, mensaje,
+}: { correo: string; mensaje: string }) {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return;
+  const content = `
+    <p style="font-size:17px;color:#0f172a;margin:0 0 8px;">Solicitud de ayuda de acceso</p>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:24px;margin-bottom:16px;">
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <tr>
+          <td style="padding:7px 0;color:#64748b;width:30%;">Correo / usuario:</td>
+          <td style="padding:7px 0;color:#0f172a;font-weight:600;">${correo || "(no indicado)"}</td>
+        </tr>
+        <tr style="border-top:1px solid #e2e8f0;">
+          <td style="padding:7px 0;color:#64748b;vertical-align:top;">Mensaje:</td>
+          <td style="padding:7px 0;color:#0f172a;">${mensaje}</td>
+        </tr>
+      </table>
+    </div>
+    <p style="color:#475569;font-size:13px;">Este mensaje fue enviado desde el formulario de ayuda en la página de inicio de sesión.</p>`;
+  await getTransporter().sendMail({
+    from: `"S&B Solutions Portal" <${process.env.GMAIL_USER}>`,
+    to: "sybsolutionscr@gmail.com",
+    subject: `🔐 Ayuda de acceso solicitada – ${correo || "usuario desconocido"}`,
+    html: baseLayout(content, "Solicitud de ayuda de acceso"),
+  });
+}
+
 export async function sendCitaRecibida({
   to, nombre, fecha, hora,
 }: { to: string; nombre: string; fecha: string; hora: string }) {

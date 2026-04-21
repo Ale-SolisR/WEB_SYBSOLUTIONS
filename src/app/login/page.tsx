@@ -5,7 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Eye, EyeOff, Lock, Mail, ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, ArrowLeft, Loader2, AlertTriangle, Send, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
@@ -20,6 +20,10 @@ function LoginForm() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sessionConflict, setSessionConflict] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [helpMsg, setHelpMsg] = useState("");
+  const [helpSending, setHelpSending] = useState(false);
+  const [helpSent, setHelpSent] = useState(false);
 
   const doSignIn = async (forceNew = false) => {
     setLoading(true);
@@ -209,11 +213,67 @@ function LoginForm() {
             )}
           </AnimatePresence>
 
-          <div className="mt-4 pt-4 border-t text-center text-xs" style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}>
-            ¿Problemas para ingresar?{" "}
-            <a href="mailto:sybsolutionscr@gmail.com" className="hover:opacity-80" style={{ color: "var(--color-primary)" }}>
-              Contacta al administrador
-            </a>
+          <div className="mt-4 pt-4 border-t text-xs" style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}>
+            <button
+              type="button"
+              onClick={() => { setHelpOpen(!helpOpen); setHelpSent(false); setHelpMsg(""); }}
+              className="w-full flex items-center justify-center gap-1.5 hover:opacity-80 transition-opacity"
+              style={{ color: "var(--color-text-muted)" }}
+            >
+              ¿Problemas para ingresar?{" "}
+              <span style={{ color: "var(--color-primary)", fontWeight: 600 }}>Contacta al administrador</span>
+              <ChevronDown size={12} style={{ color: "var(--color-primary)", transform: helpOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+            </button>
+
+            <AnimatePresence>
+              {helpOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  style={{ overflow: "hidden" }}
+                >
+                  {helpSent ? (
+                    <div className="mt-3 p-3 rounded-xl text-center text-xs" style={{ background: "#dcfce7", color: "#166534" }}>
+                      ✅ Mensaje enviado. Te contactaremos pronto.
+                    </div>
+                  ) : (
+                    <div className="mt-3 space-y-2">
+                      <textarea
+                        value={helpMsg}
+                        onChange={(e) => setHelpMsg(e.target.value)}
+                        placeholder="Describe tu problema brevemente..."
+                        rows={3}
+                        className="input-field text-xs w-full resize-none py-2"
+                        style={{ fontSize: "12px" }}
+                      />
+                      <button
+                        type="button"
+                        disabled={helpSending || !helpMsg.trim()}
+                        onClick={async () => {
+                          setHelpSending(true);
+                          try {
+                            await fetch("/api/auth/help", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ correo: email.trim(), mensaje: helpMsg.trim() }),
+                            });
+                            setHelpSent(true);
+                          } finally {
+                            setHelpSending(false);
+                          }
+                        }}
+                        className="btn-primary w-full justify-center text-xs py-2"
+                      >
+                        {helpSending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                        {helpSending ? "Enviando..." : "Enviar mensaje"}
+                      </button>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </motion.div>

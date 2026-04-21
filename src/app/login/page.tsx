@@ -21,6 +21,7 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [sessionConflict, setSessionConflict] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [helpEmail, setHelpEmail] = useState("");
   const [helpMsg, setHelpMsg] = useState("");
   const [helpSending, setHelpSending] = useState(false);
   const [helpSent, setHelpSent] = useState(false);
@@ -216,7 +217,7 @@ function LoginForm() {
           <div className="mt-4 pt-4 border-t text-xs" style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}>
             <button
               type="button"
-              onClick={() => { setHelpOpen(!helpOpen); setHelpSent(false); setHelpMsg(""); }}
+              onClick={() => { setHelpOpen(!helpOpen); setHelpSent(false); setHelpMsg(""); setHelpEmail(""); }}
               className="w-full flex items-center justify-center gap-1.5 hover:opacity-80 transition-opacity"
               style={{ color: "var(--color-text-muted)" }}
             >
@@ -240,6 +241,14 @@ function LoginForm() {
                     </div>
                   ) : (
                     <div className="mt-3 space-y-2">
+                      <input
+                        type="email"
+                        value={helpEmail}
+                        onChange={(e) => setHelpEmail(e.target.value)}
+                        placeholder="Tu correo para responderte"
+                        className="input-field text-xs w-full py-2"
+                        style={{ fontSize: "12px" }}
+                      />
                       <textarea
                         value={helpMsg}
                         onChange={(e) => setHelpMsg(e.target.value)}
@@ -250,14 +259,14 @@ function LoginForm() {
                       />
                       <button
                         type="button"
-                        disabled={helpSending || !helpMsg.trim()}
+                        disabled={helpSending || !helpMsg.trim() || !helpEmail.trim()}
                         onClick={async () => {
                           setHelpSending(true);
                           try {
                             await fetch("/api/auth/help", {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ correo: email.trim(), mensaje: helpMsg.trim() }),
+                              body: JSON.stringify({ correo: helpEmail.trim(), mensaje: helpMsg.trim() }),
                             });
                             setHelpSent(true);
                           } finally {

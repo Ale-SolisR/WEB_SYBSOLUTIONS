@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Calendar, Loader2, CheckCircle, XCircle, Clock, Video, Plus, Search, X, Save, Eye, MessageCircle, Mail, User, Phone, CreditCard, FileText, Link2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -53,15 +53,35 @@ export default function AdminCitas() {
   const [selectedCita, setSelectedCita] = useState<Cita | null>(null);
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState("");
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const citasRef = useRef<Cita[]>([]);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CitaForm>({
     defaultValues: { TipoCedula: "fisica" },
   });
 
-  const fetchCitas = () =>
-    fetch("/api/citas").then(r => r.json()).then(setCitas).catch(() => {}).finally(() => setLoading(false));
+  const fetchCitas = async (silent = false) => {
+    try {
+      const data = await fetch("/api/citas").then(r => r.json());
+      // Only update state if data changed (avoid re-renders)
+      if (JSON.stringify(data) !== JSON.stringify(citasRef.current)) {
+        citasRef.current = data;
+        setCitas(data);
+        if (silent) toast.success("Nueva cita recibida", { duration: 2500, icon: "📅" });
+      }
+      setLastUpdated(new Date());
+    } catch {
+      // Ignore silently
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  useEffect(() => { fetchCitas(); }, []);
+  useEffect(() => {
+    fetchCitas();
+    const interval = setInterval(() => fetchCitas(true), 15_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const updateEstado = async (id: number, estado: string) => {
     setUpdating(id);
@@ -73,7 +93,7 @@ export default function AdminCitas() {
       });
       if (!res.ok) throw new Error();
       toast.success(estado === "confirmada" ? "Cita confirmada · Meet generado" : "Estado actualizado");
-      fetchCitas();
+      fetchCitas(false);
     } catch {
       toast.error("Error al actualizar");
     } finally {
@@ -138,8 +158,19 @@ export default function AdminCitas() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold" style={{ color: "var(--color-text)" }}>Citas</h1>
-          <p className="text-sm mt-0.5" style={{ color: "var(--color-text-muted)" }}>Demostraciones agendadas</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-semibold" style={{ color: "var(--color-text)" }}>Citas</h1>
+            <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, #22c55e 12%, transparent)", color: "#16a34a" }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              En vivo
+            </span>
+          </div>
+          <p className="text-xs mt-0.5" style={{ color: "var(--color-text-muted)" }}>
+            Demostraciones agendadas
+            {lastUpdated && (
+              <span className="ml-1.5">· actualizado {lastUpdated.toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
+            )}
+          </p>
         </div>
         <button onClick={() => { reset({ TipoCedula: "fisica" }); setShowForm(true); }} className="btn-primary text-sm py-2 px-4">
           <Plus size={14} /> Nueva cita
@@ -294,7 +325,7 @@ export default function AdminCitas() {
           const est = ESTADOS[c.Estado];
           const phone = c.Telefono.replace(/\D/g, "");
           const waPhone = phone.length === 8 ? `506${phone}` : phone;
-          const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(`Hola ${c.NombreCompleto.split(" ")[0]}, le contactamos de S%26B Solutions sobre su cita demo del ${formatDate(c.FechaCita)} a las ${c.HoraCita.substring(0,5)}.`)}`;
+          const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(`Hola ${c.NombreCompleto.split(" ")[0]}, le contactamos de S&B Solutions sobre su cita demo del ${formatDate(c.FechaCita)} a las ${c.HoraCita.substring(0,5)}.`)}`;
           const mailUrl = `mailto:${c.Email}?subject=${encodeURIComponent("Su cita demo · S&B Solutions")}&body=${encodeURIComponent(`Estimado/a ${c.NombreCompleto},\n\n`)}`;
           return (
             <div

@@ -270,7 +270,7 @@ export default function Citas() {
                     setField("nombre", "");
                     lastLookedUp.current = "";
                   }}
-                  placeholder="207720184"
+                  placeholder="Ej: 100000000"
                   className="input-field text-sm py-2"
                   maxLength={12}
                 />
@@ -323,7 +323,7 @@ export default function Citas() {
                   const val = e.target.value.replace(/\D/g, "").slice(0, 8);
                   setField("telefono", val);
                 }}
-                placeholder="87457877"
+                placeholder="Ej: 60000000"
                 className="input-field text-sm py-2"
                 maxLength={8}
               />

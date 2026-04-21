@@ -32,7 +32,7 @@ interface CitaForm {
   Nota: string;
 }
 
-const SLOTS = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00"];
+const SLOTS = ["08:00","09:00","10:00","11:00","13:00","14:00","15:00","16:00"];
 
 const ESTADOS = {
   pendiente:  { bg: "#fef9c3", text: "#854d0e", label: "Pendiente",  dot: "#eab308" },

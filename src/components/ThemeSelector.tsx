@@ -20,6 +20,20 @@ export default function ThemeSelector() {
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
 
+  const handleSelect = async (id: Theme) => {
+    setTheme(id);
+    setOpen(false);
+    try {
+      await fetch("/api/configuracion", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site_theme: id }),
+      });
+    } catch {
+      // Ignore — theme already applied locally
+    }
+  };
+
   return (
     <div className="relative">
       <button
@@ -51,7 +65,7 @@ export default function ThemeSelector() {
               {THEMES.map((t) => (
                 <button
                   key={t.id}
-                  onClick={() => { setTheme(t.id); setOpen(false); }}
+                  onClick={() => handleSelect(t.id)}
                   className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all hover:scale-[1.02] text-left"
                   style={{
                     background: theme === t.id ? `color-mix(in srgb, ${t.color} 12%, transparent)` : "transparent",

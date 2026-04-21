@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import SessionProvider from "@/components/SessionProvider";
 import ThemeDecorations from "@/components/ThemeDecorations";
+import SessionGuard from "@/components/SessionGuard";
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
@@ -35,6 +36,7 @@ export default function RootLayout({
         <SessionProvider>
           <ThemeProvider>
             <ThemeDecorations />
+            <SessionGuard />
             {children}
             <Toaster
               position="top-right"

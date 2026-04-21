@@ -149,4 +149,19 @@ export async function initDatabase(): Promise<void> {
     IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='web' AND TABLE_NAME='CITAS' AND COLUMN_NAME='GoogleEventId')
       ALTER TABLE web.CITAS ADD GoogleEventId NVARCHAR(200) DEFAULT ''
   `);
+
+  // ── SESIONES ──────────────────────────────────────────────────────────────────
+  await pool.request().query(`
+    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='web' AND TABLE_NAME='SESIONES')
+    BEGIN
+      CREATE TABLE web.SESIONES (
+        Id           INT IDENTITY(1,1) PRIMARY KEY,
+        UserId       NVARCHAR(50)  NOT NULL,
+        SessionToken NVARCHAR(100) NOT NULL,
+        CreadaEn     DATETIME DEFAULT GETDATE(),
+        Activo       BIT DEFAULT 1
+      )
+      CREATE INDEX IX_SESIONES_UserId ON web.SESIONES (UserId, Activo)
+    END
+  `);
 }

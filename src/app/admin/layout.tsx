@@ -113,7 +113,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         )}
         <button
-          onClick={() => signOut({ callbackUrl: "/" })}
+          onClick={async () => { await fetch("/api/auth/logout", { method: "POST" }); signOut({ callbackUrl: "/" }); }}
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm w-full transition-opacity hover:opacity-70"
           style={{ color: "#ef4444" }}
         >

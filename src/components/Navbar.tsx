@@ -123,7 +123,7 @@ export default function Navbar() {
                       </Link>
                     )}
                     <button
-                      onClick={() => { setUserMenuOpen(false); signOut({ callbackUrl: "/" }); }}
+                      onClick={async () => { setUserMenuOpen(false); await fetch("/api/auth/logout", { method: "POST" }); signOut({ callbackUrl: "/" }); }}
                       className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm w-full text-left hover:opacity-80 mt-1"
                       style={{ color: "#ef4444" }}
                     >

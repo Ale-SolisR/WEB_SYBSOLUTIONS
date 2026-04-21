@@ -38,6 +38,36 @@ function InstagramIcon({ size = 14 }: { size?: number }) {
   );
 }
 
+const CONTACT_FIELDS = [
+  {
+    key: "whatsapp" as const,
+    label: "WhatsApp",
+    type: "text",
+    placeholder: "+506 8745-7877",
+    iconBg: "#dcfce7",
+    iconColor: "#16a34a",
+    icon: Phone,
+  },
+  {
+    key: "email" as const,
+    label: "Email",
+    type: "email",
+    placeholder: "info@empresa.com",
+    iconBg: "#dbeafe",
+    iconColor: "#2563eb",
+    icon: Mail,
+  },
+  {
+    key: "direccion" as const,
+    label: "Dirección",
+    type: "text",
+    placeholder: "San José, Costa Rica",
+    iconBg: "#fce7f3",
+    iconColor: "#db2777",
+    icon: MapPin,
+  },
+];
+
 const SOCIAL_CONFIG = [
   {
     key: "linkedin" as const,
@@ -64,6 +94,20 @@ const SOCIAL_CONFIG = [
     bg: "#FDE8EF",
   },
 ];
+
+function SectionHeader({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div
+      className="px-4 py-2.5 flex items-center gap-2 border-b"
+      style={{ background: "var(--color-surface-2)", borderColor: "var(--color-border)" }}
+    >
+      {icon}
+      <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text)" }}>
+        {label}
+      </span>
+    </div>
+  );
+}
 
 export default function AdminConfiguracion() {
   const [loading, setLoading] = useState(true);
@@ -97,7 +141,7 @@ export default function AdminConfiguracion() {
   };
 
   return (
-    <div className="max-w-2xl space-y-8">
+    <div className="space-y-4">
       {/* Header */}
       <div>
         <h1 className="text-xl font-semibold" style={{ color: "var(--color-text)" }}>Configuración</h1>
@@ -111,136 +155,88 @@ export default function AdminConfiguracion() {
           <Loader2 size={28} className="animate-spin" style={{ color: "var(--color-primary)" }} />
         </div>
       ) : (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
-          {/* Contacto */}
-          <div className="rounded-2xl border overflow-hidden" style={{ borderColor: "var(--color-border)" }}>
-            <div
-              className="px-5 py-3.5 flex items-center gap-2.5 border-b"
-              style={{ background: "var(--color-surface-2)", borderColor: "var(--color-border)" }}
-            >
-              <div
-                className="w-6 h-6 rounded-md flex items-center justify-center"
-                style={{ background: "var(--color-primary)" }}
-              >
-                <Phone size={12} color="#fff" />
-              </div>
-              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text)" }}>
-                Contacto
-              </span>
-            </div>
+          {/* Two columns */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            <div style={{ background: "var(--color-surface)" }}>
-              {/* WhatsApp */}
-              <div className="flex items-center gap-4 px-5 py-4 border-b" style={{ borderColor: "var(--color-border)" }}>
-                <div className="flex items-center gap-3 w-32 flex-shrink-0">
-                  <div
-                    className="w-7 h-7 rounded-lg flex items-center justify-center"
-                    style={{ background: "#dcfce7" }}
-                  >
-                    <Phone size={13} style={{ color: "#16a34a" }} />
+            {/* Contacto */}
+            <div className="rounded-xl border overflow-hidden" style={{ borderColor: "var(--color-border)" }}>
+              <SectionHeader
+                label="Contacto"
+                icon={
+                  <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "var(--color-primary)" }}>
+                    <Phone size={11} color="#fff" />
                   </div>
-                  <span className="text-sm font-medium" style={{ color: "var(--color-text)" }}>WhatsApp</span>
-                </div>
-                <input
-                  {...register("whatsapp")}
-                  type="text"
-                  className="flex-1 bg-transparent text-sm outline-none border-0 focus:ring-0"
-                  placeholder="+506 8745-7877"
-                  style={{ color: "var(--color-text)" }}
-                />
-              </div>
-
-              {/* Email */}
-              <div className="flex items-center gap-4 px-5 py-4 border-b" style={{ borderColor: "var(--color-border)" }}>
-                <div className="flex items-center gap-3 w-32 flex-shrink-0">
+                }
+              />
+              <div style={{ background: "var(--color-surface)" }}>
+                {CONTACT_FIELDS.map(({ key, label, type, placeholder, iconBg, iconColor, icon: Icon }, i) => (
                   <div
-                    className="w-7 h-7 rounded-lg flex items-center justify-center"
-                    style={{ background: "#dbeafe" }}
+                    key={key}
+                    className="flex items-center gap-3 px-4 py-3"
+                    style={{ borderBottom: i < CONTACT_FIELDS.length - 1 ? "1px solid var(--color-border)" : undefined }}
                   >
-                    <Mail size={13} style={{ color: "#2563eb" }} />
-                  </div>
-                  <span className="text-sm font-medium" style={{ color: "var(--color-text)" }}>Email</span>
-                </div>
-                <input
-                  {...register("email")}
-                  type="email"
-                  className="flex-1 bg-transparent text-sm outline-none border-0 focus:ring-0"
-                  placeholder="info@empresa.com"
-                  style={{ color: "var(--color-text)" }}
-                />
-              </div>
-
-              {/* Dirección */}
-              <div className="flex items-center gap-4 px-5 py-4">
-                <div className="flex items-center gap-3 w-32 flex-shrink-0">
-                  <div
-                    className="w-7 h-7 rounded-lg flex items-center justify-center"
-                    style={{ background: "#fce7f3" }}
-                  >
-                    <MapPin size={13} style={{ color: "#db2777" }} />
-                  </div>
-                  <span className="text-sm font-medium" style={{ color: "var(--color-text)" }}>Dirección</span>
-                </div>
-                <input
-                  {...register("direccion")}
-                  type="text"
-                  className="flex-1 bg-transparent text-sm outline-none border-0 focus:ring-0"
-                  placeholder="San José, Costa Rica"
-                  style={{ color: "var(--color-text)" }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Redes Sociales */}
-          <div className="rounded-2xl border overflow-hidden" style={{ borderColor: "var(--color-border)" }}>
-            <div
-              className="px-5 py-3.5 flex items-center gap-2.5 border-b"
-              style={{ background: "var(--color-surface-2)", borderColor: "var(--color-border)" }}
-            >
-              <div
-                className="w-6 h-6 rounded-md flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%)" }}
-              >
-                <InstagramIcon size={11} />
-              </div>
-              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text)" }}>
-                Redes Sociales
-              </span>
-            </div>
-
-            <div style={{ background: "var(--color-surface)" }}>
-              {SOCIAL_CONFIG.map(({ key, label, placeholder, icon: Icon, color, bg }, i) => (
-                <div
-                  key={key}
-                  className="flex items-center gap-4 px-5 py-4"
-                  style={{ borderBottom: i < SOCIAL_CONFIG.length - 1 ? `1px solid var(--color-border)` : undefined }}
-                >
-                  <div className="flex items-center gap-3 w-32 flex-shrink-0">
-                    <div
-                      className="w-7 h-7 rounded-lg flex items-center justify-center"
-                      style={{ background: bg, color }}
-                    >
-                      <Icon size={13} />
+                    <div className="flex items-center gap-2.5 w-28 flex-shrink-0">
+                      <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: iconBg }}>
+                        <Icon size={12} style={{ color: iconColor }} />
+                      </div>
+                      <span className="text-xs font-medium" style={{ color: "var(--color-text)" }}>{label}</span>
                     </div>
-                    <span className="text-sm font-medium" style={{ color: "var(--color-text)" }}>{label}</span>
+                    <input
+                      {...register(key)}
+                      type={type}
+                      className="flex-1 bg-transparent text-xs outline-none border-0 focus:ring-0"
+                      placeholder={placeholder}
+                      style={{ color: "var(--color-text)" }}
+                    />
                   </div>
-                  <input
-                    {...register(key)}
-                    type="url"
-                    className="flex-1 bg-transparent text-sm outline-none border-0 focus:ring-0 truncate"
-                    placeholder={placeholder}
-                    style={{ color: "var(--color-text)" }}
-                  />
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+
+            {/* Redes Sociales */}
+            <div className="rounded-xl border overflow-hidden" style={{ borderColor: "var(--color-border)" }}>
+              <SectionHeader
+                label="Redes Sociales"
+                icon={
+                  <div
+                    className="w-5 h-5 rounded flex items-center justify-center"
+                    style={{ background: "linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%)" }}
+                  >
+                    <InstagramIcon size={10} />
+                  </div>
+                }
+              />
+              <div style={{ background: "var(--color-surface)" }}>
+                {SOCIAL_CONFIG.map(({ key, label, placeholder, icon: Icon, color, bg }, i) => (
+                  <div
+                    key={key}
+                    className="flex items-center gap-3 px-4 py-3"
+                    style={{ borderBottom: i < SOCIAL_CONFIG.length - 1 ? "1px solid var(--color-border)" : undefined }}
+                  >
+                    <div className="flex items-center gap-2.5 w-28 flex-shrink-0">
+                      <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: bg, color }}>
+                        <Icon size={12} />
+                      </div>
+                      <span className="text-xs font-medium" style={{ color: "var(--color-text)" }}>{label}</span>
+                    </div>
+                    <input
+                      {...register(key)}
+                      type="url"
+                      className="flex-1 bg-transparent text-xs outline-none border-0 focus:ring-0 truncate"
+                      placeholder={placeholder}
+                      style={{ color: "var(--color-text)" }}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Save bar */}
           <div
-            className="flex items-center justify-between px-5 py-4 rounded-2xl border"
+            className="flex items-center justify-between px-4 py-3 rounded-xl border"
             style={{
               background: isDirty
                 ? "color-mix(in srgb, var(--color-primary) 5%, var(--color-surface))"
@@ -252,8 +248,8 @@ export default function AdminConfiguracion() {
             <p className="text-sm" style={{ color: isDirty ? "var(--color-primary)" : "var(--color-text-muted)" }}>
               {isDirty ? "Tienes cambios sin guardar" : "Todo guardado"}
             </p>
-            <button type="submit" disabled={saving || !isDirty} className="btn-primary py-2 px-5 text-sm disabled:opacity-40">
-              {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            <button type="submit" disabled={saving || !isDirty} className="btn-primary py-2 px-4 text-sm disabled:opacity-40">
+              {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
               {saving ? "Guardando..." : "Guardar cambios"}
             </button>
           </div>

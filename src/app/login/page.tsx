@@ -5,31 +5,43 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Eye, EyeOff, Lock, Mail, ArrowLeft, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { Eye, EyeOff, Lock, Mail, ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/portal/capacitaciones";
+  const razon = searchParams.get("razon");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sessionConflict, setSessionConflict] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const doSignIn = async (forceNew = false) => {
     setLoading(true);
+    setSessionConflict(false);
     try {
       const result = await signIn("credentials", {
         email: email.trim(),
         password,
+        forceNew: forceNew ? "true" : "false",
         redirect: false,
       });
 
       if (result?.error) {
+        // Detect SESSION_CONFLICT — may come as the error message or encoded in URL
+        const isConflict =
+          result.error === "SESSION_CONFLICT" ||
+          (result.url && result.url.includes("SESSION_CONFLICT"));
+
+        if (isConflict) {
+          setSessionConflict(true);
+          return;
+        }
         toast.error("Credenciales incorrectas. Verifica tu email y contraseña.");
       } else {
         toast.success("¡Bienvenido!");
@@ -38,6 +50,15 @@ function LoginForm() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await doSignIn(false);
+  };
+
+  const handleForceLogin = async () => {
+    await doSignIn(true);
   };
 
   return (
@@ -57,7 +78,6 @@ function LoginForm() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-sm"
       >
-        {/* Back link */}
         <Link href="/" className="inline-flex items-center gap-1.5 text-xs mb-5 hover:opacity-70 transition-opacity" style={{ color: "var(--color-text-muted)" }}>
           <ArrowLeft size={14} /> Volver al inicio
         </Link>
@@ -80,8 +100,17 @@ function LoginForm() {
             </p>
           </div>
 
+          {/* Session replaced notice */}
+          {razon === "sesion_reemplazada" && (
+            <div className="mb-4 p-3 rounded-xl text-xs flex items-start gap-2"
+              style={{ background: "#fef3c7", color: "#92400e", border: "1px solid #fde68a" }}>
+              <AlertTriangle size={14} className="mt-0.5 flex-shrink-0" />
+              Tu sesión fue cerrada porque iniciaste sesión en otro dispositivo.
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-3">
-            {/* Username / Email */}
+            {/* Email */}
             <div>
               <label className="block text-xs font-medium mb-1" style={{ color: "var(--color-text)" }}>
                 Usuario o correo
@@ -136,6 +165,49 @@ function LoginForm() {
               {loading ? "Verificando..." : "Ingresar"}
             </button>
           </form>
+
+          {/* Session conflict modal */}
+          <AnimatePresence>
+            {sessionConflict && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2 }}
+                className="mt-4 p-4 rounded-xl border"
+                style={{ background: "var(--color-surface-2)", borderColor: "var(--color-border)" }}
+              >
+                <div className="flex items-start gap-2 mb-3">
+                  <AlertTriangle size={15} className="mt-0.5 flex-shrink-0" style={{ color: "#f59e0b" }} />
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
+                      Sesión activa detectada
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--color-text-muted)" }}>
+                      Ya tienes una sesión abierta en otro dispositivo o navegador. ¿Deseas cerrarla y continuar aquí?
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSessionConflict(false)}
+                    className="flex-1 btn-outline text-xs py-2"
+                    disabled={loading}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleForceLogin}
+                    disabled={loading}
+                    className="flex-1 btn-primary text-xs py-2"
+                  >
+                    {loading ? <Loader2 size={12} className="animate-spin" /> : null}
+                    {loading ? "Abriendo..." : "Sí, abrir aquí"}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="mt-4 pt-4 border-t text-center text-xs" style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}>
             ¿Problemas para ingresar?{" "}

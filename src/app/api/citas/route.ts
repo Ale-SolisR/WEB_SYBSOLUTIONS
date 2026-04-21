@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
       // Validate 8am–4pm slot
       const [h] = HoraCita.split(":").map(Number);
-      if (h < 8 || h >= 16) {
+      if (h < 8 || h > 16) {
         return NextResponse.json({ error: "Horario solo entre 8:00 y 16:00" }, { status: 400 });
       }
     }

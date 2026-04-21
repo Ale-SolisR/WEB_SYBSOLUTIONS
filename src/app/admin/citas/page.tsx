@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Calendar, Loader2, CheckCircle, XCircle, Clock, Video, Plus, Search, X, Save } from "lucide-react";
+import { Calendar, Loader2, CheckCircle, XCircle, Clock, Video, Plus, Search, X, Save, Eye, MessageCircle, Mail, User, Phone, CreditCard, FileText, Link2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -50,6 +50,7 @@ export default function AdminCitas() {
   const [updating, setUpdating] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [selectedCita, setSelectedCita] = useState<Cita | null>(null);
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState("");
 
@@ -286,6 +287,140 @@ export default function AdminCitas() {
         )}
       </AnimatePresence>
 
+      {/* Detail modal */}
+      <AnimatePresence>
+        {selectedCita && (() => {
+          const c = selectedCita;
+          const est = ESTADOS[c.Estado];
+          const phone = c.Telefono.replace(/\D/g, "");
+          const waPhone = phone.length === 8 ? `506${phone}` : phone;
+          const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(`Hola ${c.NombreCompleto.split(" ")[0]}, le contactamos de S%26B Solutions sobre su cita demo del ${formatDate(c.FechaCita)} a las ${c.HoraCita.substring(0,5)}.`)}`;
+          const mailUrl = `mailto:${c.Email}?subject=${encodeURIComponent("Su cita demo · S&B Solutions")}&body=${encodeURIComponent(`Estimado/a ${c.NombreCompleto},\n\n`)}`;
+          return (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)" }}
+              onClick={() => setSelectedCita(null)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.97, y: 8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.97, y: 8 }}
+                transition={{ duration: 0.15 }}
+                className="w-full max-w-sm rounded-2xl shadow-2xl border overflow-hidden"
+                style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div
+                  className="flex items-center justify-between px-5 py-3.5 border-b"
+                  style={{ borderColor: "var(--color-border)" }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                      style={{ background: "color-mix(in srgb, var(--color-primary) 12%, transparent)", color: "var(--color-primary)" }}
+                    >
+                      {c.NombreCompleto.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold leading-tight" style={{ color: "var(--color-text)" }}>
+                        {c.NombreCompleto}
+                      </p>
+                      <span
+                        className="text-xs font-medium px-1.5 py-0.5 rounded-full"
+                        style={{ background: est.bg, color: est.text }}
+                      >
+                        {est.label}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedCita(null)}
+                    className="p-1 rounded-lg hover:opacity-70 transition-opacity"
+                    style={{ color: "var(--color-text-muted)" }}
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div className="px-5 py-4 space-y-3">
+                  {/* Info grid */}
+                  <div className="space-y-2">
+                    {[
+                      { icon: CreditCard, label: c.TipoCedula === "juridica" ? "Cédula jurídica" : "Cédula física", value: c.Cedula },
+                      { icon: Calendar,    label: "Fecha y hora", value: `${formatDate(c.FechaCita)} · ${c.HoraCita.substring(0,5)} CR` },
+                      { icon: Mail,        label: "Correo", value: c.Email },
+                      { icon: Phone,       label: "Teléfono", value: c.Telefono },
+                    ].map(({ icon: Icon, label, value }) => (
+                      <div key={label} className="flex items-start gap-2.5">
+                        <Icon size={13} className="mt-0.5 flex-shrink-0" style={{ color: "var(--color-text-muted)" }} />
+                        <div className="min-w-0">
+                          <p className="text-[10px] uppercase tracking-wide font-medium" style={{ color: "var(--color-text-muted)" }}>{label}</p>
+                          <p className="text-xs font-medium truncate" style={{ color: "var(--color-text)" }}>{value}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Nota */}
+                  {c.Nota && (
+                    <div
+                      className="rounded-xl p-3 mt-1"
+                      style={{ background: "var(--color-surface-2)" }}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <FileText size={12} style={{ color: "var(--color-text-muted)" }} />
+                        <span className="text-[10px] uppercase tracking-wide font-medium" style={{ color: "var(--color-text-muted)" }}>Mensaje del cliente</span>
+                      </div>
+                      <p className="text-xs leading-relaxed" style={{ color: "var(--color-text)" }}>{c.Nota}</p>
+                    </div>
+                  )}
+
+                  {/* Meet link */}
+                  {c.MeetLink && (
+                    <a
+                      href={c.MeetLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-xs px-3 py-2 rounded-xl hover:opacity-80 transition-opacity"
+                      style={{ background: "#e8f5e9", color: "#166534" }}
+                    >
+                      <Link2 size={12} />
+                      <span className="truncate">{c.MeetLink}</span>
+                    </a>
+                  )}
+                </div>
+
+                {/* Footer actions */}
+                <div
+                  className="flex gap-2 px-5 py-3.5 border-t"
+                  style={{ borderColor: "var(--color-border)" }}
+                >
+                  <a
+                    href={waUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl transition-opacity hover:opacity-85"
+                    style={{ background: "#22c55e", color: "#fff" }}
+                  >
+                    <MessageCircle size={13} /> WhatsApp
+                  </a>
+                  <a
+                    href={mailUrl}
+                    className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl border transition-opacity hover:opacity-85"
+                    style={{ background: "var(--color-surface-2)", color: "var(--color-text)", borderColor: "var(--color-border)" }}
+                  >
+                    <Mail size={13} /> Correo
+                  </a>
+                </div>
+              </motion.div>
+            </div>
+          );
+        })()}
+      </AnimatePresence>
+
       {/* Citas list */}
       {loading ? (
         <div className="flex justify-center py-16">
@@ -356,6 +491,16 @@ export default function AdminCitas() {
                 ) : (
                   <div className="w-6 h-6 flex-shrink-0" />
                 )}
+
+                {/* View detail */}
+                <button
+                  onClick={() => setSelectedCita(c)}
+                  className="w-6 h-6 flex items-center justify-center rounded-lg hover:opacity-80 transition-opacity flex-shrink-0"
+                  style={{ background: "var(--color-surface-2)", color: "var(--color-text-muted)" }}
+                  title="Ver detalle"
+                >
+                  <Eye size={11} />
+                </button>
 
                 {/* Actions */}
                 <div className="flex gap-1 flex-shrink-0">

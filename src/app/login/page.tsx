@@ -22,9 +22,12 @@ function LoginForm() {
   const [sessionConflict, setSessionConflict] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [helpEmail, setHelpEmail] = useState("");
+  const [helpEmailError, setHelpEmailError] = useState(false);
   const [helpMsg, setHelpMsg] = useState("");
   const [helpSending, setHelpSending] = useState(false);
   const [helpSent, setHelpSent] = useState(false);
+
+  const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
   const doSignIn = async (forceNew = false) => {
     setLoading(true);
@@ -241,14 +244,20 @@ function LoginForm() {
                     </div>
                   ) : (
                     <div className="mt-3 space-y-2">
-                      <input
-                        type="email"
-                        value={helpEmail}
-                        onChange={(e) => setHelpEmail(e.target.value)}
-                        placeholder="Tu correo para responderte"
-                        className="input-field text-xs w-full py-2"
-                        style={{ fontSize: "12px" }}
-                      />
+                      <div>
+                        <input
+                          type="email"
+                          value={helpEmail}
+                          onChange={(e) => { setHelpEmail(e.target.value); setHelpEmailError(false); }}
+                          onBlur={() => setHelpEmailError(helpEmail.trim() !== "" && !isValidEmail(helpEmail))}
+                          placeholder="Tu correo para responderte"
+                          className="input-field text-xs w-full py-2"
+                          style={{ fontSize: "12px", borderColor: helpEmailError ? "#ef4444" : undefined }}
+                        />
+                        {helpEmailError && (
+                          <p className="text-xs mt-1" style={{ color: "#ef4444" }}>Ingresa un correo electrónico válido.</p>
+                        )}
+                      </div>
                       <textarea
                         value={helpMsg}
                         onChange={(e) => setHelpMsg(e.target.value)}
@@ -259,8 +268,13 @@ function LoginForm() {
                       />
                       <button
                         type="button"
-                        disabled={helpSending || !helpMsg.trim() || !helpEmail.trim()}
+                        disabled={helpSending}
                         onClick={async () => {
+                          if (!helpEmail.trim() || !isValidEmail(helpEmail)) {
+                            setHelpEmailError(true);
+                            return;
+                          }
+                          if (!helpMsg.trim()) return;
                           setHelpSending(true);
                           try {
                             await fetch("/api/auth/help", {
